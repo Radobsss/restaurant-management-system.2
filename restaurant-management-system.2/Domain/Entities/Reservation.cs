@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using restaurant_management_system._2.Domain.Enums;
 
 namespace restaurant_management_system._2.Domain.Entities
 {
-    internal class Reservation
+    public class Reservation
     {
+        public Table Table { get; set; }
+        public ReservationStatus Status { get; set; }
     }
 }
