@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace restaurant_management_system._2.Domain.Entities
 {
-    internal class Order
+    public class Order
     {
         public Table Table { get; set; }
         public List<OrderItem> Items { get; set; }
