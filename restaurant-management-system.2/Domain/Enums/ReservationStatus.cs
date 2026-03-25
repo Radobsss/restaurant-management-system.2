@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace restaurant_management_system._2.Domain.Enums
 {
-    internal class ReservationStatus
+    public enum ReservationStatus
     {
+        Pending,
+        Confirmed,
+        Cancelled
     }
 }
