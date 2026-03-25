@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace restaurant_management_system._2.Domain.Enums
 {
-    internal class StaffRole
+    public enum StaffRole
     {
+        Waiter,
+        Chef,
+        Manager,
+        Cashier
     }
 }
