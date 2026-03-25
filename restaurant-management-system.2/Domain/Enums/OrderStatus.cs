@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace restaurant_management_system._2.Domain.Enums
+﻿namespace restaurant_management_system._2.Domain.Enums
 {
-    internal class OrderStatus
-    {
-    }
+        public enum OrderStatus
+        {
+            Open,
+            Closed,
+            Cancelled
+        }
 }
