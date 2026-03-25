@@ -8,5 +8,6 @@ namespace restaurant_management_system._2.Domain.Entities
 {
     internal class Table
     {
+        public List<Order> Orders { get; set; }
     }
 }
