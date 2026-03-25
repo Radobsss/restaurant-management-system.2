@@ -8,5 +8,6 @@ namespace restaurant_management_system._2.Domain.Entities
 {
     public class Category
     {
+        public List<MenuItem> MenuItems { get; set; }
     }
 }
