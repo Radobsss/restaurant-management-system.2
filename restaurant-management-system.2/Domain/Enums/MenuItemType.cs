@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace restaurant_management_system._2.Domain.Enums
 {
-    internal class MenuItemType
+    public enum MenuItemType
     {
+        Food,
+        Drink,
+        Dessert,
+        Alcohol,
+        Other
     }
 }
