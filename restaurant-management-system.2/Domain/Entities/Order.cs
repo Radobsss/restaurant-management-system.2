@@ -1,4 +1,5 @@
-﻿using System;
+﻿using restaurant_management_system._2.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,5 +11,6 @@ namespace restaurant_management_system._2.Domain.Entities
     {
         public Table Table { get; set; }
         public List<OrderItem> Items { get; set; }
+        public OrderStatus Status { get; set; }
     }
 }
