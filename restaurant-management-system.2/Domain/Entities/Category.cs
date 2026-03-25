@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace restaurant_management_system._2.Domain.Entities
 {
-    internal class Category
+    public class Category
     {
     }
 }
