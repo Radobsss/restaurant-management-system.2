@@ -8,8 +8,8 @@ namespace restaurant_management_system._2.Domain.Entities
 {
     public class Table
     {
-        public List<Order> Orders { get; set; } 
-        public List<Reservation> Reservations { get; set; }
+        public List<Order> Orders { get; set; }  = new List<Order>();
+        public List<Reservation> Reservations { get; set; } = new List<Reservation>();
 
         public int Id { get; set; }
         public int Number { get; set; }
