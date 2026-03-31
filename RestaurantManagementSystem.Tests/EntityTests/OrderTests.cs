@@ -18,7 +18,18 @@ namespace RestaurantManagementSystem.Tests.EntityTests
 
                 Assert.IsNotNull(order.Items);
             }
-           
+        [TestMethod]
+        public void Order_ShouldSetAndGetStatus()
+        {
+            var order = new Order
+            {
+                Status = OrderStatus.Open
+            };
+
+            Assert.AreEqual(OrderStatus.Open, order.Status);
+        }
+
+        }
     }
 }
 
