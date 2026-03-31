@@ -17,5 +17,13 @@ namespace RestaurantManagementSystem.Tests.EntityTests
 
             Assert.IsNotNull(table.Orders);
         }
+
+        [TestMethod]
+        public void Table_ShouldInitializeReservationsList()
+        {
+            var table = new Table();
+
+            Assert.IsNotNull(table.Reservations);
+        }
     }
 }
