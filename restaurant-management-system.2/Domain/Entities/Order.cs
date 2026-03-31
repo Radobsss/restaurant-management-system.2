@@ -12,5 +12,7 @@ namespace restaurant_management_system._2.Domain.Entities
         public Table Table { get; set; }
         public List<OrderItem> Items { get; set; }
         public OrderStatus Status { get; set; }
+        public int Id { get; set; }
+        public int TableId { get; set; }
     }
 }
