@@ -12,12 +12,11 @@ namespace RestaurantManagementSystem.Tests.EntityTests
     public class OrderTests
     {
         [TestMethod]
-            public void Order_ShouldInitializeItemsList()
-            {
-                var order = new Order();
-
-                Assert.IsNotNull(order.Items);
-            }
+        public void Order_ShouldInitializeItemsList()
+        {
+            var order = new Order();
+            Assert.IsNotNull(order.Items);
+        }
         [TestMethod]
         public void Order_ShouldSetAndGetStatus()
         {
@@ -25,10 +24,18 @@ namespace RestaurantManagementSystem.Tests.EntityTests
             {
                 Status = OrderStatus.Open
             };
-
             Assert.AreEqual(OrderStatus.Open, order.Status);
         }
 
+        [TestMethod]
+        public void Order_ShouldSetTableReference()
+        {
+            var table = new Table();
+            var order = new Order
+            {
+                Table = table
+            };
+            Assert.AreEqual(table, order.Table);
         }
     }
 }
