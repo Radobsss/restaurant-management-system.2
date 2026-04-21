@@ -27,5 +27,13 @@ namespace restaurant_management_system._2.Service
             tables.Add(table);
             return table;
         }
+        public Table GetTableById(int tableId)
+        {
+
+            Table table = tables.FirstOrDefault(t => t.Id == tableId);
+            if (table == null)
+                throw new ArgumentException("Table not found.");
+            return table;
+        }
     }
 }
