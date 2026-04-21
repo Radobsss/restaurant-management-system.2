@@ -15,6 +15,6 @@ namespace restaurant_management_system._2.Domain.Entities
         public int Number { get; set; }
         public int Capacity { get; set; }
         public bool IsOccupied { get; set; }
-       
+        public string Location { get; set; }
     }
 }
