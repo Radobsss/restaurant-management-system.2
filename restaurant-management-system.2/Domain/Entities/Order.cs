@@ -14,5 +14,6 @@ namespace restaurant_management_system._2.Domain.Entities
         public OrderStatus Status { get; set; }
         public int Id { get; set; }
         public int TableId { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }
