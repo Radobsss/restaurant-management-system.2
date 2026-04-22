@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace restaurant_management_system._2.Data
+﻿namespace restaurant_management_system._2.Data
 {
     internal class Repository
     {
