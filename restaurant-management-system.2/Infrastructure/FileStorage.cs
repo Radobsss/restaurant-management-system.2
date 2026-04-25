@@ -1,7 +1,8 @@
-﻿using System.IO;
+﻿using restaurant_management_system._2.Infrastructure;
+using System.IO;
 using System.Text.Json;
 
-namespace RestaurantProject.Infrastucture
+namespace restaurant_management_system._2.Infrastructure
 {
     public class FileStorage
     {
