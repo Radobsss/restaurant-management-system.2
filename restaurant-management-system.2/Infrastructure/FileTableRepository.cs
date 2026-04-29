@@ -42,22 +42,9 @@ namespace restaurant_management_system._2.Infrastructure.Repositories
                 table.Id = db.NextId;
                 db.NextId++;
 
-                db.Tables.Add(table);
-            }
-            else
-            {
-                Table existingTable = db.Tables.FirstOrDefault(t => t.Id == table.Id);
-
-                if (existingTable != null)
-                {
-                    existingTable.Number = table.Number;
-                    existingTable.Capacity = table.Capacity;
-                    existingTable.Location = table.Location;
-                    existingTable.IsOccupied = table.IsOccupied;
-                }
-            }
-
-            storage.Save(db);
-        }
+namespace restaurant_management_system._2.Infrastructure
+{
+    internal class FileTableRepository
+    {
     }
 }
