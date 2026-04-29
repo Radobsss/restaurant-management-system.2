@@ -41,10 +41,7 @@ namespace restaurant_management_system._2.Infrastructure.Repositories
             {
                 table.Id = db.NextId;
                 db.NextId++;
-
-namespace restaurant_management_system._2.Infrastructure
-{
-    internal class FileTableRepository
-    {
+            }
+        }
     }
 }
