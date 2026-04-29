@@ -1,7 +1,7 @@
-﻿using RestaurantProject.Domain.Entities;
+﻿using restaurant_management_system._2.Domain.Entities;
 using System.Collections.Generic;
 
-namespace RestaurantProject.Application.Interfaces
+namespace restaurant_management_system._2.Domain.Application.Interfaces
 {
     public interface ITableRepository
     {
