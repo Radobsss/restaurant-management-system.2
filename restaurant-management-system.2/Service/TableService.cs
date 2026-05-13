@@ -1,13 +1,20 @@
-﻿using System;
+﻿using restaurant_management_system._2.Domain.Entities;
+using restaurant_management_system._2.Infrastructure;
+using restaurant_management_system._2.Infrastructure.Repositories;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using restaurant_management_system._2.Domain.Entities;
 
 namespace restaurant_management_system._2.Service
 {
     public class TableService
     {
-        private readonly List<Table> tables = new List<Table>();
+        private readonly FileTableRepository tableRepository;
+
+        public TableService(FileTableRepository tableRepository)
+        {
+            this.tableRepository = tableRepository;
+        }
+
         public Table AddTable(int number, int capacity, string location)
         {
             if (number <= 0)
@@ -19,26 +26,27 @@ namespace restaurant_management_system._2.Service
             if (string.IsNullOrWhiteSpace(location))
                 throw new ArgumentException("Location cannot be empty.");
 
-            if (tables.Any(t => t.Number == number))
+            Table existingTable = tableRepository.GetByNumber(number);
+
+            if (existingTable != null)
                 throw new ArgumentException("Table with this number already exists.");
 
             Table table = new Table
             {
-                Id = tables.Count + 1,
                 Number = number,
                 Capacity = capacity,
                 Location = location,
                 IsOccupied = false
             };
 
-            tables.Add(table);
+            tableRepository.Save(table);
 
             return table;
         }
 
         public Table GetTableById(int tableId)
         {
-            Table table = tables.FirstOrDefault(t => t.Id == tableId);
+            Table table = tableRepository.GetById(tableId);
 
             if (table == null)
                 throw new ArgumentException("Table not found.");
@@ -48,7 +56,7 @@ namespace restaurant_management_system._2.Service
 
         public List<Table> GetAllTables()
         {
-            return tables;
+            return tableRepository.GetAll();
         }
     }
 }
