@@ -37,11 +37,11 @@ namespace restaurant_management_system._2.Infrastructure.Repositories
         {
             TableStorage db = storage.Load();
 
-            if (table.Id == 0)
-            {
-                table.Id = db.NextId;
-                db.NextId++;
-            }
+            //if (table.Id == 0)
+            //{
+            //    table.Id = db.NextId;
+            //    db.NextId++;
+            //}
         }
     }
 }

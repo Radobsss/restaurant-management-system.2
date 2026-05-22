@@ -5,7 +5,7 @@ namespace restaurant_management_system._2.Infrastructure
 {
     public class TableStorage
     {
-        public int NextId { get; set; } = 1;
+       // public int NextId { get; set; } = 1;
 
         public List<Table> Tables { get; set; } = new List<Table>();
         public List<Order> Orders { get; set; } = new List<Order>();

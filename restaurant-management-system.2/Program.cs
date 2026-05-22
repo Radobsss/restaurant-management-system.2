@@ -1,27 +1,24 @@
-﻿using restaurant_management_system._2.Domain.Entities;
-using restaurant_management_system._2.Infrastructure;
-using restaurant_management_system._2.Infrastructure.Repositories;
-using restaurant_management_system._2.Service;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using restaurant_management_system._2.Domain.Entities;
+using restaurant_management_system._2.Infrastructure.Data;
+using restaurant_management_system._2.Service;
 
-FileStorage storage = new FileStorage();
+RestaurantDbContext db = new RestaurantDbContext();
 
-FileTableRepository tableRepository = new FileTableRepository(storage);
-
-TableService tableService = new TableService(tableRepository);
+TableService tableService = new TableService(db);
 
 while (true)
-  {
+{
+    Console.WriteLine();
     Console.WriteLine("======================================");
     Console.WriteLine("     RESTAURANT MANAGEMENT SYSTEM");
     Console.WriteLine("======================================");
     Console.WriteLine("1. Table management");
     Console.WriteLine("2. Menu management");
     Console.WriteLine("3. Order management");
-    Console.WriteLine("4. Reservation management");
-    Console.WriteLine("5. Payment management");
-    Console.WriteLine("6. Reports");
+    Console.WriteLine("4. Payment management");
+    Console.WriteLine("5. Reports");
     Console.WriteLine("0. Exit");
     Console.WriteLine("======================================");
 
@@ -44,14 +41,10 @@ while (true)
             break;
 
         case "4":
-            ComingSoon("Reservation management");
-            break;
-
-        case "5":
             ComingSoon("Payment management");
             break;
 
-        case "6":
+        case "5":
             ComingSoon("Reports");
             break;
 
@@ -63,21 +56,21 @@ while (true)
             Pause();
             break;
     }
-  }
+}
 
 static void TableManagementMenu(TableService tableService)
 {
     while (true)
     {
+        Console.WriteLine();
         Console.WriteLine("======================================");
         Console.WriteLine("          TABLE MANAGEMENT");
         Console.WriteLine("======================================");
-        Console.WriteLine("1. Add table");
-        Console.WriteLine("2. Show all tables");
+        Console.WriteLine("1. Show tables");
+        Console.WriteLine("2. Reserve table");
         Console.WriteLine("3. Occupy table");
         Console.WriteLine("4. Free table");
-        Console.WriteLine("5. Reserve table");
-        Console.WriteLine("6. Show free tables");
+        Console.WriteLine("5. Cancel reservation");
         Console.WriteLine("0. Back");
         Console.WriteLine("======================================");
 
@@ -88,27 +81,23 @@ static void TableManagementMenu(TableService tableService)
         switch (choice)
         {
             case "1":
-                AddTableUI(tableService);
-                break;
-
-            case "2":
                 ShowAllTablesUI(tableService);
                 break;
 
+            case "2":
+                ReserveTableUI(tableService);
+                break;
+
             case "3":
-                ComingSoon("Occupy table");
+                OccupyTableUI(tableService);
                 break;
 
             case "4":
-                ComingSoon("Free table");
+                FreeTableUI(tableService);
                 break;
 
             case "5":
-                ComingSoon("Reserve table");
-                break;
-
-            case "6":
-                ComingSoon("Show free tables");
+                CancelReservationUI(tableService);
                 break;
 
             case "0":
@@ -122,32 +111,85 @@ static void TableManagementMenu(TableService tableService)
     }
 }
 
-static void AddTableUI(TableService tableService)
+static void ShowAllTablesUI(TableService tableService)
+{
+    Console.WriteLine();
+    Console.WriteLine("==================================================");
+    Console.WriteLine("                     TABLES");
+    Console.WriteLine("==================================================");
+
+    List<Table> tables = tableService.GetAllTables();
+
+    if (tables.Count == 0)
+    {
+        Console.WriteLine("No tables found.");
+        Pause();
+        return;
+    }
+
+    Console.WriteLine("Number | Capacity | Location | Status");
+    Console.WriteLine("--------------------------------------------------");
+
+    foreach (Table table in tables)
+    {
+        string status;
+
+        if (table.IsOccupied)
+            status = "Occupied";
+        else if (table.IsReserved)
+            status = "Reserved";
+        else
+            status = "Free";
+
+        Console.WriteLine($"{table.Number} | {table.Capacity} | {table.Location} | {status}");
+    }
+
+    Pause();
+}
+
+static void ShowTablesWithoutPause(TableService tableService)
+{
+    List<Table> tables = tableService.GetAllTables();
+
+    Console.WriteLine();
+    Console.WriteLine("Number | Capacity | Location | Status");
+    Console.WriteLine("--------------------------------------------------");
+
+    foreach (Table table in tables)
+    {
+        string status;
+
+        if (table.IsOccupied)
+            status = "Occupied";
+        else if (table.IsReserved)
+            status = "Reserved";
+        else
+            status = "Free";
+
+        Console.WriteLine($"{table.Number} | {table.Capacity} | {table.Location} | {status}");
+    }
+
+    Console.WriteLine();
+}
+
+static void ReserveTableUI(TableService tableService)
 {
     Console.WriteLine();
     Console.WriteLine("======================================");
-    Console.WriteLine("               ADD TABLE");
+    Console.WriteLine("            RESERVE TABLE");
     Console.WriteLine("======================================");
+
+    ShowTablesWithoutPause(tableService);
 
     try
     {
         Console.Write("Table number: ");
-        int number = int.Parse(Console.ReadLine()!);
+        int tableNumber = int.Parse(Console.ReadLine()!);
 
-        Console.Write("Capacity: ");
-        int capacity = int.Parse(Console.ReadLine()!);
-
-        string location = ChooseTableLocation();
-
-        Table table = tableService.AddTable(number, capacity, location);
+        Table table = tableService.ReserveTable(tableNumber);
 
         Console.WriteLine();
-        Console.WriteLine("Table added successfully!");
-        Console.WriteLine($"ID: {table.Id}");
-        Console.WriteLine($"Number: {table.Number}");
-        Console.WriteLine($"Capacity: {table.Capacity}");
-        Console.WriteLine($"Location: {table.Location}");
-        Console.WriteLine($"Occupied: {table.IsOccupied}");
+        Console.WriteLine($"Table {table.Number} is now reserved.");
     }
     catch (Exception ex)
     {
@@ -158,65 +200,98 @@ static void AddTableUI(TableService tableService)
     Pause();
 }
 
-static void ShowAllTablesUI(TableService tableService)
+static void OccupyTableUI(TableService tableService)
 {
+    Console.WriteLine();
     Console.WriteLine("======================================");
-    Console.WriteLine("              ALL TABLES");
+    Console.WriteLine("             OCCUPY TABLE");
     Console.WriteLine("======================================");
 
-    List<Table> tables = tableService.GetAllTables();
+    ShowTablesWithoutPause(tableService);
 
-    if (tables.Count == 0)
+    try
     {
-        Console.WriteLine("No tables found.");
+        Console.Write("Table number: ");
+        int tableNumber = int.Parse(Console.ReadLine()!);
+
+        Table table = tableService.OccupyTable(tableNumber);
+
+        Console.WriteLine();
+        Console.WriteLine($"Table {table.Number} is now occupied.");
     }
-    else
+    catch (Exception ex)
     {
-        foreach (Table table in tables)
-        {
-            Console.WriteLine("--------------------------------------");
-            Console.WriteLine($"ID: {table.Id}");
-            Console.WriteLine($"Number: {table.Number}");
-            Console.WriteLine($"Capacity: {table.Capacity}");
-            Console.WriteLine($"Location: {table.Location}");
-            Console.WriteLine($"Occupied: {table.IsOccupied}");
-        }
+        Console.WriteLine();
+        Console.WriteLine("Error: " + ex.Message);
     }
 
     Pause();
 }
-static string ChooseTableLocation()
+
+static void FreeTableUI(TableService tableService)
 {
     Console.WriteLine();
-    Console.WriteLine("Choose location:");
-    Console.WriteLine("1. Main hall");
-    Console.WriteLine("2. Window");
-    Console.WriteLine("3. Terrace");
-    Console.WriteLine("4. Garden");
-    Console.WriteLine("5. VIP area");
-    Console.Write("Option: ");
+    Console.WriteLine("======================================");
+    Console.WriteLine("              FREE TABLE");
+    Console.WriteLine("======================================");
 
-    string? choice = Console.ReadLine();
+    ShowTablesWithoutPause(tableService);
 
-    switch (choice)
+    try
     {
-        case "1":
-            return "Main hall";
-        case "2":
-            return "Window";
-        case "3":
-            return "Terrace";
-        case "4":
-            return "Garden";
-        case "5":
-            return "VIP area";
-        default:
-            throw new ArgumentException("Invalid location option.");
+        Console.Write("Table number: ");
+        int tableNumber = int.Parse(Console.ReadLine()!);
+
+        Table table = tableService.FreeTable(tableNumber);
+
+        Console.WriteLine();
+        Console.WriteLine($"Table {table.Number} is now free.");
     }
+    catch (Exception ex)
+    {
+        Console.WriteLine();
+        Console.WriteLine("Error: " + ex.Message);
+    }
+
+    Pause();
 }
+
+static void CancelReservationUI(TableService tableService)
+{
+    Console.WriteLine();
+    Console.WriteLine("======================================");
+    Console.WriteLine("         CANCEL RESERVATION");
+    Console.WriteLine("======================================");
+
+    ShowTablesWithoutPause(tableService);
+
+    try
+    {
+        Console.Write("Table number: ");
+        int tableNumber = int.Parse(Console.ReadLine()!);
+
+        Table table = tableService.CancelReservation(tableNumber);
+
+        Console.WriteLine();
+        Console.WriteLine($"Reservation for table {table.Number} was canceled.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine();
+        Console.WriteLine("Error: " + ex.Message);
+    }
+
+    Pause();
+}
+
 static void ComingSoon(string featureName)
 {
+    Console.WriteLine();
+    Console.WriteLine("======================================");
+    Console.WriteLine(featureName.ToUpper());
+    Console.WriteLine("======================================");
     Console.WriteLine("This feature is not implemented yet.");
+
     Pause();
 }
 

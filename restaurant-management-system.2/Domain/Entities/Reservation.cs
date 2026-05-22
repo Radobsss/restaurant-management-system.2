@@ -1,15 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using restaurant_management_system._2.Domain.Enums;
 
 namespace restaurant_management_system._2.Domain.Entities
 {
     public class Reservation
     {
-        public Table Table { get; set; }
+        public int Id { get; set; }
+
+        public int TableId { get; set; }
+        public Table? Table { get; set; }
+
+        public DateTime StartTime { get; set; }
+
+        public DateTime EndTime { get; set; }
+
+        public int GuestCount { get; set; }
+
         public ReservationStatus Status { get; set; }
     }
 }
