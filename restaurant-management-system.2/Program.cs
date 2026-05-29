@@ -8,6 +8,8 @@ RestaurantDbContext db = new RestaurantDbContext();
 
 TableService tableService = new TableService(db);
 
+OrderService orderService = new OrderService(db);
+
 while (true)
 {
     Console.WriteLine();
@@ -37,7 +39,7 @@ while (true)
             break;
 
         case "3":
-            ComingSoon("Order management");
+            OrderManagementMenu(orderService);
             break;
 
         case "4":
@@ -291,6 +293,188 @@ static void ComingSoon(string featureName)
     Console.WriteLine(featureName.ToUpper());
     Console.WriteLine("======================================");
     Console.WriteLine("This feature is not implemented yet.");
+
+    Pause();
+}
+
+static void OrderManagementMenu(OrderService orderService)
+{
+    while (true)
+    {
+        Console.WriteLine();
+        Console.WriteLine("======================================");
+        Console.WriteLine("          ORDER MANAGEMENT");
+        Console.WriteLine("======================================");
+        Console.WriteLine("1. Create order");
+        Console.WriteLine("2. Add item to order");
+        Console.WriteLine("3. Remove item from order");
+        Console.WriteLine("4. Calculate total");
+        Console.WriteLine("5. Close order");
+        Console.WriteLine("0. Back");
+        Console.WriteLine("======================================");
+
+        Console.Write("Choose option: ");
+        string? choice = Console.ReadLine();
+
+        switch (choice)
+        {
+            case "1":
+                CreateOrderUI(orderService);
+                break;
+            case "2":
+                AddItemToOrderUI(orderService);
+                break;
+            case "3":
+                RemoveItemFromOrderUI(orderService);
+                break;
+            case "4":
+                CalculateTotalUI(orderService);
+                break;
+            case "5":
+                CloseOrderUI(orderService);
+                break;
+            case "0":
+                return;
+            default:
+                Console.WriteLine("Invalid option.");
+                Pause();
+                break;
+        }
+    }
+}
+
+static void CreateOrderUI(OrderService orderService)
+{
+    Console.WriteLine();
+    Console.WriteLine("======================================");
+    Console.WriteLine("            CREATE ORDER");
+    Console.WriteLine("======================================");
+
+    try
+    {
+        Console.Write("Table ID: ");
+        int tableId = int.Parse(Console.ReadLine()!);
+
+        Order order = orderService.CreateOrder(tableId);
+
+        Console.WriteLine();
+        Console.WriteLine($"Order {order.Id} created for table ID {order.TableId}.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine();
+        Console.WriteLine("Error: " + ex.Message);
+    }
+
+    Pause();
+}
+
+static void AddItemToOrderUI(OrderService orderService)
+{
+    Console.WriteLine();
+    Console.WriteLine("======================================");
+    Console.WriteLine("        ADD ITEM TO ORDER");
+    Console.WriteLine("======================================");
+
+    try
+    {
+        Console.Write("Order ID: ");
+        int orderId = int.Parse(Console.ReadLine()!);
+
+        Console.Write("Menu item ID: ");
+        int menuItemId = int.Parse(Console.ReadLine()!);
+
+        Console.Write("Quantity: ");
+        int quantity = int.Parse(Console.ReadLine()!);
+
+        orderService.AddItemToOrder(orderId, menuItemId, quantity);
+
+        Console.WriteLine();
+        Console.WriteLine("Item added to order.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine();
+        Console.WriteLine("Error: " + ex.Message);
+    }
+
+    Pause();
+}
+
+static void RemoveItemFromOrderUI(OrderService orderService)
+{
+    Console.WriteLine();
+    Console.WriteLine("======================================");
+    Console.WriteLine("      REMOVE ITEM FROM ORDER");
+    Console.WriteLine("======================================");
+
+    try
+    {
+        Console.Write("Order item ID: ");
+        int orderItemId = int.Parse(Console.ReadLine()!);
+
+        orderService.RemoveItemFromOrder(orderItemId);
+
+        Console.WriteLine();
+        Console.WriteLine("Item removed from order.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine();
+        Console.WriteLine("Error: " + ex.Message);
+    }
+
+    Pause();
+}
+
+static void CalculateTotalUI(OrderService orderService)
+{
+    Console.WriteLine();
+    Console.WriteLine("======================================");
+    Console.WriteLine("          CALCULATE TOTAL");
+    Console.WriteLine("======================================");
+
+    try
+    {
+        Console.Write("Order ID: ");
+        int orderId = int.Parse(Console.ReadLine()!);
+
+        decimal total = orderService.CalculateTotal(orderId);
+
+        Console.WriteLine();
+        Console.WriteLine($"Total: {total:F2} lv.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine();
+        Console.WriteLine("Error: " + ex.Message);
+    }
+
+    Pause();
+}
+
+static void CloseOrderUI(OrderService orderService)
+{
+    Console.WriteLine();
+    Console.WriteLine("======================================");
+    Console.WriteLine("             CLOSE ORDER");
+    Console.WriteLine("======================================");
+
+    try
+    {
+        Console.Write("Order ID: ");
+        int orderId = int.Parse(Console.ReadLine()!);
+
+        orderService.CloseOrder(orderId);
+
+        Console.WriteLine();
+        Console.WriteLine("Order closed successfully.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine();
+        Console.WriteLine("Error: " + ex.Message);
+    }
 
     Pause();
 }
