@@ -5,12 +5,15 @@ using restaurant_management_system._2.Domain.Entities;
 using restaurant_management_system._2.Infrastructure.Data;
 using restaurant_management_system._2.Service;
 
-RestaurantDbContext db = new RestaurantDbContext();
+//RestaurantDbContext db = new RestaurantDbContext();
+RestaurantDbContext db = new();
 SeedTables(db);
 
-TableService tableService = new TableService(db);
+//ableService tableService = new TableService(db);
 
 OrderService orderService = new OrderService(db);
+
+TableService tableService = new(db);
 
 while (true)
 {
