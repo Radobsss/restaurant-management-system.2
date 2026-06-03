@@ -15,5 +15,8 @@ namespace restaurant_management_system._2.Domain.Entities
         public int Id { get; set; }
         public int TableId { get; set; }
         public DateTime CreatedAt { get; set; }
+
+        public decimal TotalAmount { get; set; }
+
     }
 }
