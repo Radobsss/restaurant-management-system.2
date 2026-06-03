@@ -18,5 +18,24 @@ namespace restaurant_management_system._2.Infrastructure.Data
             optionsBuilder.UseSqlServer(
               @"Server=(localdb)\MSSQLLocalDB;Database=RestaurantManagementSystemDb;Trusted_Connection=True;TrustServerCertificate=True;");
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<MenuItem>()
+                .Property(m => m.Price)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<OrderItem>()
+                .Property(o => o.UnitPrice)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Order>()
+                .Property(o => o.TotalAmount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Payment>()
+                .Property(p => p.Amount)
+                .HasPrecision(18, 2);
+        }
     }
 }

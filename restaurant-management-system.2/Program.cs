@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using restaurant_management_system._2.Domain.Entities;
 using restaurant_management_system._2.Infrastructure.Data;
 using restaurant_management_system._2.Service;
 
 RestaurantDbContext db = new RestaurantDbContext();
+SeedTables(db);
 
 TableService tableService = new TableService(db);
+
+OrderService orderService = new OrderService(db);
 
 while (true)
 {
@@ -37,7 +41,7 @@ while (true)
             break;
 
         case "3":
-            ComingSoon("Order management");
+            OrderManagementMenu(orderService);
             break;
 
         case "4":
@@ -295,9 +299,223 @@ static void ComingSoon(string featureName)
     Pause();
 }
 
+static void OrderManagementMenu(OrderService orderService)
+{
+    while (true)
+    {
+        Console.WriteLine();
+        Console.WriteLine("======================================");
+        Console.WriteLine("          ORDER MANAGEMENT");
+        Console.WriteLine("======================================");
+        Console.WriteLine("1. Create order");
+        Console.WriteLine("2. Add item to order");
+        Console.WriteLine("3. Remove item from order");
+        Console.WriteLine("4. Calculate total");
+        Console.WriteLine("5. Close order");
+        Console.WriteLine("0. Back");
+        Console.WriteLine("======================================");
+
+        Console.Write("Choose option: ");
+        string? choice = Console.ReadLine();
+
+        switch (choice)
+        {
+            case "1":
+                CreateOrderUI(orderService);
+                break;
+            case "2":
+                AddItemToOrderUI(orderService);
+                break;
+            case "3":
+                RemoveItemFromOrderUI(orderService);
+                break;
+            case "4":
+                CalculateTotalUI(orderService);
+                break;
+            case "5":
+                CloseOrderUI(orderService);
+                break;
+            case "0":
+                return;
+            default:
+                Console.WriteLine("Invalid option.");
+                Pause();
+                break;
+        }
+    }
+}
+
+static void CreateOrderUI(OrderService orderService)
+{
+    Console.WriteLine();
+    Console.WriteLine("======================================");
+    Console.WriteLine("            CREATE ORDER");
+    Console.WriteLine("======================================");
+
+    try
+    {
+        Console.Write("Table ID: ");
+        int tableId = int.Parse(Console.ReadLine()!);
+
+        Order order = orderService.CreateOrder(tableId);
+
+        Console.WriteLine();
+        Console.WriteLine($"Order {order.Id} created for table ID {order.TableId}.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine();
+        Console.WriteLine("Error: " + ex.Message);
+    }
+
+    Pause();
+}
+
+static void AddItemToOrderUI(OrderService orderService)
+{
+    Console.WriteLine();
+    Console.WriteLine("======================================");
+    Console.WriteLine("        ADD ITEM TO ORDER");
+    Console.WriteLine("======================================");
+
+    try
+    {
+        Console.Write("Order ID: ");
+        int orderId = int.Parse(Console.ReadLine()!);
+
+        Console.Write("Menu item ID: ");
+        int menuItemId = int.Parse(Console.ReadLine()!);
+
+        Console.Write("Quantity: ");
+        int quantity = int.Parse(Console.ReadLine()!);
+
+        orderService.AddItemToOrder(orderId, menuItemId, quantity);
+
+        Console.WriteLine();
+        Console.WriteLine("Item added to order.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine();
+        Console.WriteLine("Error: " + ex.Message);
+    }
+
+    Pause();
+}
+
+static void RemoveItemFromOrderUI(OrderService orderService)
+{
+    Console.WriteLine();
+    Console.WriteLine("======================================");
+    Console.WriteLine("      REMOVE ITEM FROM ORDER");
+    Console.WriteLine("======================================");
+
+    try
+    {
+        Console.Write("Order item ID: ");
+        int orderItemId = int.Parse(Console.ReadLine()!);
+
+        orderService.RemoveItemFromOrder(orderItemId);
+
+        Console.WriteLine();
+        Console.WriteLine("Item removed from order.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine();
+        Console.WriteLine("Error: " + ex.Message);
+    }
+
+    Pause();
+}
+
+static void CalculateTotalUI(OrderService orderService)
+{
+    Console.WriteLine();
+    Console.WriteLine("======================================");
+    Console.WriteLine("          CALCULATE TOTAL");
+    Console.WriteLine("======================================");
+
+    try
+    {
+        Console.Write("Order ID: ");
+        int orderId = int.Parse(Console.ReadLine()!);
+
+        decimal total = orderService.CalculateTotal(orderId);
+
+        Console.WriteLine();
+        Console.WriteLine($"Total: {total:F2} lv.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine();
+        Console.WriteLine("Error: " + ex.Message);
+    }
+
+    Pause();
+}
+
+static void CloseOrderUI(OrderService orderService)
+{
+    Console.WriteLine();
+    Console.WriteLine("======================================");
+    Console.WriteLine("             CLOSE ORDER");
+    Console.WriteLine("======================================");
+
+    try
+    {
+        Console.Write("Order ID: ");
+        int orderId = int.Parse(Console.ReadLine()!);
+
+        orderService.CloseOrder(orderId);
+
+        Console.WriteLine();
+        Console.WriteLine("Order closed successfully.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine();
+        Console.WriteLine("Error: " + ex.Message);
+    }
+
+    Pause();
+}
+
 static void Pause()
 {
     Console.WriteLine();
     Console.WriteLine("Press any key to continue...");
     Console.ReadKey();
 }
+
+static void SeedTables(RestaurantDbContext db)
+{
+    if (db.Tables.Any())
+        return;
+
+    db.Tables.AddRange(
+        new Table { Number = 1, Capacity = 2, Location = "Window", IsOccupied = false, IsReserved = false },
+        new Table { Number = 2, Capacity = 2, Location = "Window", IsOccupied = false, IsReserved = false },
+        new Table { Number = 3, Capacity = 4, Location = "Main hall", IsOccupied = true, IsReserved = false },
+        new Table { Number = 4, Capacity = 4, Location = "Main hall", IsOccupied = false, IsReserved = false },
+        new Table { Number = 5, Capacity = 6, Location = "Terrace", IsOccupied = false, IsReserved = true },
+        new Table { Number = 6, Capacity = 6, Location = "Terrace", IsOccupied = false, IsReserved = false },
+        new Table { Number = 7, Capacity = 8, Location = "VIP area", IsOccupied = true, IsReserved = false },
+        new Table { Number = 8, Capacity = 8, Location = "VIP area", IsOccupied = false, IsReserved = false },
+        new Table { Number = 9, Capacity = 2, Location = "Garden", IsOccupied = false, IsReserved = false },
+        new Table { Number = 10, Capacity = 2, Location = "Garden", IsOccupied = false, IsReserved = true },
+        new Table { Number = 11, Capacity = 4, Location = "Main hall", IsOccupied = false, IsReserved = false },
+        new Table { Number = 12, Capacity = 4, Location = "Main hall", IsOccupied = true, IsReserved = false },
+        new Table { Number = 13, Capacity = 6, Location = "Terrace", IsOccupied = false, IsReserved = false },
+        new Table { Number = 14, Capacity = 6, Location = "Terrace", IsOccupied = false, IsReserved = false },
+        new Table { Number = 15, Capacity = 8, Location = "VIP area", IsOccupied = false, IsReserved = true },
+        new Table { Number = 16, Capacity = 8, Location = "VIP area", IsOccupied = true, IsReserved = false },
+        new Table { Number = 17, Capacity = 2, Location = "Window", IsOccupied = false, IsReserved = false },
+        new Table { Number = 18, Capacity = 4, Location = "Garden", IsOccupied = false, IsReserved = false },
+        new Table { Number = 19, Capacity = 6, Location = "Main hall", IsOccupied = false, IsReserved = false },
+        new Table { Number = 20, Capacity = 10, Location = "VIP area", IsOccupied = true, IsReserved = false }
+    );
+
+    db.SaveChanges();
+}
+
