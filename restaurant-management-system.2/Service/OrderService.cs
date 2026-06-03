@@ -23,8 +23,18 @@ namespace restaurant_management_system._2.Service
             if (table == null)
                 throw new ArgumentException("Table not found.");
 
-            if (table.IsOccupied)
-                throw new ArgumentException("Table is already occupied.");
+            if (!table.IsOccupied)
+                throw new ArgumentException("Cannot create order for a free table. Occupy the table first.");
+
+            if (table.IsReserved)
+                throw new ArgumentException("Cannot create order for a reserved table. Cancel or use the reservation first.");
+
+            bool hasOpenOrder = db.Orders.Any(o =>
+                o.TableId == tableId &&
+                o.Status != OrderStatus.Closed);
+
+            if (hasOpenOrder)
+                throw new ArgumentException("This table already has an active order.");
 
             Order order = new Order
             {
@@ -32,8 +42,6 @@ namespace restaurant_management_system._2.Service
                 CreatedAt = DateTime.Now,
                 Status = OrderStatus.Open
             };
-
-            table.IsOccupied = true;
 
             db.Orders.Add(order);
             db.SaveChanges();
