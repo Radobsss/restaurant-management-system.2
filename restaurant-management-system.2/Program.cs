@@ -1,19 +1,18 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using restaurant_management_system._2.Application.Interface;
 using restaurant_management_system._2.Domain.Entities;
+using restaurant_management_system._2.Infrastructure;
 using restaurant_management_system._2.Infrastructure.Data;
 using restaurant_management_system._2.Service;
 
-//RestaurantDbContext db = new RestaurantDbContext();
-RestaurantDbContext db = new();
-SeedTables(db);
+RestaurantDbContext db = new RestaurantDbContext();
 
-//ableService tableService = new TableService(db);
-
+ITableRepository tableRepository = new FileTableRepository(db);
 OrderService orderService = new OrderService(db);
 
-TableService tableService = new(db);
+TableService tableService = new TableService(tableRepository);
 
 while (true)
 {

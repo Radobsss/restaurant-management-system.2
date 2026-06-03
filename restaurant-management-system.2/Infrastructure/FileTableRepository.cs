@@ -1,47 +1,49 @@
-﻿using restaurant_management_system._2.Domain.Application.Interfaces;
-using restaurant_management_system._2.Domain.Entities;
-using restaurant_management_system._2.Infrastructure;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using restaurant_management_system._2.Application.Interface;
+using restaurant_management_system._2.Domain.Entities;
+using restaurant_management_system._2.Infrastructure.Data;
 
-namespace restaurant_management_system._2.Infrastructure.Repositories
+namespace restaurant_management_system._2.Infrastructure
 {
     public class FileTableRepository : ITableRepository
     {
-        private readonly FileStorage storage;
+        private readonly RestaurantDbContext db;
 
-        public FileTableRepository(FileStorage storage)
+        public FileTableRepository(RestaurantDbContext db)
         {
-            this.storage = storage;
+            this.db = db;
         }
 
         public List<Table> GetAll()
         {
-            TableStorage db = storage.Load();
-            return db.Tables;
+            return db.Tables
+                .OrderBy(t => t.Number)
+                .ToList();
         }
 
-        public Table GetById(int id)
+        public Table? GetById(int id)
         {
-            TableStorage db = storage.Load();
-            return db.Tables.FirstOrDefault(t => t.Id == id);
+            return db.Tables
+                .FirstOrDefault(t => t.Id == id);
         }
 
-        public Table GetByNumber(int number)
+        public Table? GetByNumber(int number)
         {
-            TableStorage db = storage.Load();
-            return db.Tables.FirstOrDefault(t => t.Number == number);
+            return db.Tables
+                .FirstOrDefault(t => t.Number == number);
         }
 
-        public void Save(Table table)
+        public void Add(Table table)
         {
-            TableStorage db = storage.Load();
+            db.Tables.Add(table);
+            db.SaveChanges();
+        }
 
-            //if (table.Id == 0)
-            //{
-            //    table.Id = db.NextId;
-            //    db.NextId++;
-            //}
+        public void Update(Table table)
+        {
+            db.Tables.Update(table);
+            db.SaveChanges();
         }
     }
 }
