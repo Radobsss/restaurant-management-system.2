@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using restaurant_management_system._2.Application.Interface;
 using restaurant_management_system._2.Domain.Entities;
 using restaurant_management_system._2.Domain.Enums;
 using restaurant_management_system._2.Infrastructure.Data;
@@ -10,11 +11,21 @@ namespace restaurant_management_system._2.Service
 {
     public class OrderService
     {
-        private readonly RestaurantDbContext db;
+        private readonly IOrderRepository orderRepository;
+        private readonly IOrderItemRepository orderItemRepository;
+        private readonly ITableRepository tableRepository;
+        private readonly IMenuItemRepository menuItemRepository;
 
-        public OrderService(RestaurantDbContext db)
+        public OrderService(
+            IOrderRepository orderRepository,
+            IOrderItemRepository orderItemRepository,
+            ITableRepository tableRepository,
+            IMenuItemRepository menuItemRepository)
         {
-            this.db = db;
+            this.orderRepository = orderRepository;
+            this.orderItemRepository = orderItemRepository;
+            this.tableRepository = tableRepository;
+            this.menuItemRepository = menuItemRepository;
         }
 
         public Order CreateOrder(int tableId)

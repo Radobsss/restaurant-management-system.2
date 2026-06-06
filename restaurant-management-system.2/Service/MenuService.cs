@@ -2,20 +2,28 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using restaurant_management_system._2.Application.Interface;
 using restaurant_management_system._2.Domain.Entities;
 using restaurant_management_system._2.Domain.Enums;
 using restaurant_management_system._2.Infrastructure.Data;
+
 
 namespace restaurant_management_system._2.Service
 {
     public class MenuService
     {
-        private readonly RestaurantDbContext db;
 
-        public MenuService(RestaurantDbContext db)
+        private readonly ICategoryRepository categoryRepository;
+        private readonly IMenuItemRepository menuItemRepository;
+
+        public MenuService(
+            ICategoryRepository categoryRepository,
+            IMenuItemRepository menuItemRepository)
         {
-            this.db = db;
+            this.categoryRepository = categoryRepository;
+            this.menuItemRepository = menuItemRepository;
         }
+
 
         public Category AddCategory(string name)
         {

@@ -26,9 +26,20 @@ namespace restaurant_management_system._2.UI
                 reservationRepository,
                 tableRepository);
 
-            MenuService menuService = new MenuService(db);
+            ICategoryRepository categoryRepository = new FileCategoryRepository(db);
+            IMenuItemRepository menuItemRepository = new FileMenuItemRepository(db);
+            IOrderRepository orderRepository = new FileOrderRepository(db);
+            IOrderItemRepository orderItemRepository = new FileOrderItemRepository(db);
 
-            OrderService orderService = new OrderService(db);
+            MenuService menuService = new MenuService(
+                categoryRepository,
+                menuItemRepository);
+
+            OrderService orderService = new OrderService(
+                orderRepository,
+                orderItemRepository,
+                tableRepository,
+                menuItemRepository);
 
             RestaurantUI ui = new RestaurantUI(tableService, reservationService,menuService,orderService);
 
