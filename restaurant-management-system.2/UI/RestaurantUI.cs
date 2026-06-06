@@ -63,7 +63,7 @@ namespace restaurant_management_system._2.UI
                         break;
 
                     case "6":
-                        ComingSoon("Reports");
+                        ReportsManagementMenu();
                         break;
 
                     case "0":
@@ -75,6 +75,176 @@ namespace restaurant_management_system._2.UI
                         break;
                 }
             }
+        }
+        private void ReportsManagementMenu()
+        {
+            while (true)
+            {
+                Console.WriteLine();
+                Console.WriteLine("======================================");
+                Console.WriteLine("              REPORTS");
+                Console.WriteLine("======================================");
+                Console.WriteLine("1. Table occupancy report");
+                Console.WriteLine("2. Reservation status report");
+                Console.WriteLine("3. Reservations by date");
+                Console.WriteLine("4. Daily revenue report");
+                Console.WriteLine("5. Most ordered items report");
+                Console.WriteLine("0. Back");
+                Console.WriteLine("======================================");
+
+                Console.Write("Choose option: ");
+                string? choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        TableOccupancyReportUI();
+                        break;
+
+                    case "2":
+                        ReservationStatusReportUI();
+                        break;
+
+                    case "3":
+                        ReservationsByDateReportUI();
+                        break;
+
+                    case "4":
+                        ComingSoon("Daily revenue report");
+                        break;
+
+                    case "5":
+                        ComingSoon("Most ordered items report");
+                        break;
+
+                    case "0":
+                        return;
+
+                    default:
+                        Console.WriteLine("Invalid option.");
+                        Pause();
+                        break;
+                }
+            }
+        }
+
+        private void TableOccupancyReportUI()
+        {
+            Console.WriteLine();
+            Console.WriteLine("======================================");
+            Console.WriteLine("        TABLE OCCUPANCY REPORT");
+            Console.WriteLine("======================================");
+
+            List<Table> tables = tableService.GetAllTables();
+
+            if (tables.Count == 0)
+            {
+                Console.WriteLine("No tables found.");
+                Pause();
+                return;
+            }
+
+            int totalTables = tables.Count;
+            int occupiedTables = tables.Count(t => t.IsOccupied);
+            int reservedTables = tables.Count(t => t.IsReserved);
+            int freeTables = tables.Count(t => !t.IsOccupied && !t.IsReserved);
+
+            decimal occupiedPercent = totalTables == 0
+                ? 0
+                : (decimal)occupiedTables / totalTables * 100;
+
+            decimal reservedPercent = totalTables == 0
+                ? 0
+                : (decimal)reservedTables / totalTables * 100;
+
+            decimal freePercent = totalTables == 0
+                ? 0
+                : (decimal)freeTables / totalTables * 100;
+
+            Console.WriteLine($"Total tables:    {totalTables}");
+            Console.WriteLine($"Occupied tables: {occupiedTables} ({occupiedPercent:F2}%)");
+            Console.WriteLine($"Reserved tables: {reservedTables} ({reservedPercent:F2}%)");
+            Console.WriteLine($"Free tables:     {freeTables} ({freePercent:F2}%)");
+
+            Console.WriteLine();
+            Console.WriteLine("Tables by status:");
+            PrintTables(tables);
+
+            Pause();
+        }
+
+        private void ReservationStatusReportUI()
+        {
+            Console.WriteLine();
+            Console.WriteLine("======================================");
+            Console.WriteLine("       RESERVATION STATUS REPORT");
+            Console.WriteLine("======================================");
+
+            List<Reservation> reservations = reservationService.GetAllReservations();
+
+            if (reservations.Count == 0)
+            {
+                Console.WriteLine("No reservations found.");
+                Pause();
+                return;
+            }
+
+            int totalReservations = reservations.Count;
+            int confirmedReservations = reservations.Count(r => r.Status == ReservationStatus.Confirmed);
+            int pendingReservations = reservations.Count(r => r.Status == ReservationStatus.Pending);
+            int cancelledReservations = reservations.Count(r => r.Status == ReservationStatus.Cancelled);
+
+            Console.WriteLine($"Total reservations:     {totalReservations}");
+            Console.WriteLine($"Confirmed reservations: {confirmedReservations}");
+            Console.WriteLine($"Pending reservations:   {pendingReservations}");
+            Console.WriteLine($"Cancelled reservations: {cancelledReservations}");
+
+            Console.WriteLine();
+            Console.WriteLine("All reservations:");
+            PrintReservations(reservations);
+
+            Pause();
+        }
+
+        private void ReservationsByDateReportUI()
+        {
+            Console.WriteLine();
+            Console.WriteLine("======================================");
+            Console.WriteLine("        RESERVATIONS BY DATE");
+            Console.WriteLine("======================================");
+
+            try
+            {
+                int year = ReadInt("Year: ");
+                int month = ReadInt("Month: ");
+                int day = ReadInt("Day: ");
+
+                DateTime selectedDate = new DateTime(year, month, day);
+
+                List<Reservation> reservations = reservationService.GetAllReservations()
+                    .Where(r => r.StartTime.Date == selectedDate.Date)
+                    .OrderBy(r => r.StartTime)
+                    .ToList();
+
+                if (reservations.Count == 0)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("No reservations found for this date.");
+                    Pause();
+                    return;
+                }
+
+                Console.WriteLine();
+                Console.WriteLine($"Reservations for {selectedDate:yyyy-MM-dd}:");
+                PrintReservations(reservations);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Error: " + ex.Message);
+            }
+
+            Pause();
         }
         private void OrderManagementMenu()
         {
