@@ -40,11 +40,15 @@ namespace restaurant_management_system._2.Service
         }
 
         public Reservation CreateReservation(
-            int tableNumber,
-            int guestCount,
-            DateTime startTime,
-            DateTime endTime)
+    int tableNumber,
+    string customerName,
+    int guestCount,
+    DateTime startTime,
+    DateTime endTime)
         {
+            if (string.IsNullOrWhiteSpace(customerName))
+                throw new ArgumentException("Customer name cannot be empty.");
+
             if (guestCount <= 0)
                 throw new ArgumentException("Guest count must be greater than 0.");
 
@@ -62,6 +66,9 @@ namespace restaurant_management_system._2.Service
             if (table.IsOccupied)
                 throw new ArgumentException("Occupied table cannot be reserved.");
 
+            if (table.IsReserved)
+                throw new ArgumentException("Table is already reserved.");
+
             if (guestCount > table.Capacity)
                 throw new ArgumentException("Guest count is greater than table capacity.");
 
@@ -78,6 +85,7 @@ namespace restaurant_management_system._2.Service
             Reservation reservation = new Reservation
             {
                 TableId = table.Id,
+                CustomerName = customerName.Trim(),
                 GuestCount = guestCount,
                 StartTime = startTime,
                 EndTime = endTime,
@@ -86,6 +94,7 @@ namespace restaurant_management_system._2.Service
 
             table.IsReserved = true;
             table.IsOccupied = false;
+            table.ReservedBy = customerName.Trim();
 
             reservationRepository.Add(reservation);
             tableRepository.Update(table);

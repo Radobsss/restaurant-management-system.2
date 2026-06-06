@@ -1,6 +1,5 @@
 ﻿using restaurant_management_system._2.Domain.Entities;
 using restaurant_management_system._2.Service;
-using System.Globalization;
 
 namespace restaurant_management_system._2.UI
 {
@@ -83,10 +82,8 @@ namespace restaurant_management_system._2.UI
                 Console.WriteLine("======================================");
                 Console.WriteLine("1. Show all tables");
                 Console.WriteLine("2. Show free tables");
-                Console.WriteLine("3. Reserve table");
-                Console.WriteLine("4. Occupy table");
-                Console.WriteLine("5. Free table");
-                Console.WriteLine("6. Cancel table reservation");
+                Console.WriteLine("3. Occupy table");
+                Console.WriteLine("4. Free table");
                 Console.WriteLine("0. Back");
                 Console.WriteLine("======================================");
 
@@ -104,19 +101,11 @@ namespace restaurant_management_system._2.UI
                         break;
 
                     case "3":
-                        ReserveTableUI();
-                        break;
-
-                    case "4":
                         OccupyTableUI();
                         break;
 
-                    case "5":
+                    case "4":
                         FreeTableUI();
-                        break;
-
-                    case "6":
-                        CancelTableReservationUI();
                         break;
 
                     case "0":
@@ -217,45 +206,6 @@ namespace restaurant_management_system._2.UI
             Pause();
         }
 
-        private void ReserveTableUI()
-        {
-            Console.WriteLine();
-            Console.WriteLine("======================================");
-            Console.WriteLine("             RESERVE TABLE");
-            Console.WriteLine("======================================");
-
-            List<Table> reservableTables = tableService.GetReservableTables();
-
-            if (reservableTables.Count == 0)
-            {
-                Console.WriteLine("No free tables available for reservation.");
-                Pause();
-                return;
-            }
-
-            Console.WriteLine("Tables available for reservation:");
-            PrintTables(reservableTables);
-
-            try
-            {
-                int tableNumber = ReadInt("Table number: ");
-
-                Console.Write("Reservation name: ");
-                string reservedBy = Console.ReadLine()!;
-
-                Table table = tableService.ReserveTable(tableNumber, reservedBy);
-
-                Console.WriteLine();
-                Console.WriteLine($"Table {table.Number} reserved successfully for {table.ReservedBy}.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine();
-                Console.WriteLine("Error: " + ex.Message);
-            }
-
-            Pause();
-        }
 
         private void OccupyTableUI()
         {
@@ -343,46 +293,7 @@ namespace restaurant_management_system._2.UI
             Pause();
         }
 
-        private void CancelTableReservationUI()
-        {
-            Console.WriteLine();
-            Console.WriteLine("======================================");
-            Console.WriteLine("       CANCEL TABLE RESERVATION");
-            Console.WriteLine("======================================");
-
-            List<Table> reservedTables = tableService.GetAllTables()
-                .Where(t => t.IsReserved && !t.IsOccupied)
-                .OrderBy(t => t.Number)
-                .ToList();
-
-            if (reservedTables.Count == 0)
-            {
-                Console.WriteLine("No reserved tables found.");
-                Pause();
-                return;
-            }
-
-            Console.WriteLine("Reserved tables:");
-            PrintTables(reservedTables);
-
-            try
-            {
-                int tableNumber = ReadInt("Table number: ");
-
-                Table table = tableService.CancelReservation(tableNumber);
-
-                Console.WriteLine();
-                Console.WriteLine($"Reservation for table {table.Number} cancelled successfully.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine();
-                Console.WriteLine("Error: " + ex.Message);
-            }
-
-            Pause();
-        }
-
+    
         private void CreateReservationUI()
         {
             Console.WriteLine();
@@ -390,16 +301,38 @@ namespace restaurant_management_system._2.UI
             Console.WriteLine("          CREATE RESERVATION");
             Console.WriteLine("======================================");
 
+            List<Table> freeTables = tableService.GetFreeTables();
+
+            if (freeTables.Count == 0)
+            {
+                Console.WriteLine("No free tables available for reservation.");
+                Pause();
+                return;
+            }
+
+            Console.WriteLine("Tables available for reservation:");
+            PrintTables(freeTables);
+
             try
             {
                 int tableNumber = ReadInt("Table number: ");
+
+                bool tableCanBeReserved = freeTables.Any(t => t.Number == tableNumber);
+
+                if (!tableCanBeReserved)
+                    throw new ArgumentException("This table is not available for reservation.");
+
+                Console.Write("Customer name: ");
+                string customerName = Console.ReadLine()!;
+
                 int guestCount = ReadInt("Guest count: ");
 
-                DateTime startTime = ReadDateTime("Start time (yyyy-MM-dd HH:mm): ");
-                DateTime endTime = ReadDateTime("End time (yyyy-MM-dd HH:mm): ");
+                DateTime startTime = ReadStartDateTimeParts();
+                DateTime endTime = ReadEndTimeParts(startTime);
 
                 Reservation reservation = reservationService.CreateReservation(
                     tableNumber,
+                    customerName,
                     guestCount,
                     startTime,
                     endTime);
@@ -407,6 +340,7 @@ namespace restaurant_management_system._2.UI
                 Console.WriteLine();
                 Console.WriteLine("Reservation created successfully!");
                 Console.WriteLine($"Reservation ID: {reservation.Id}");
+                Console.WriteLine($"Customer: {reservation.CustomerName}");
                 Console.WriteLine($"Table ID: {reservation.TableId}");
                 Console.WriteLine($"Guests: {reservation.GuestCount}");
                 Console.WriteLine($"Start: {reservation.StartTime}");
@@ -429,6 +363,20 @@ namespace restaurant_management_system._2.UI
             Console.WriteLine("          CANCEL RESERVATION");
             Console.WriteLine("======================================");
 
+            List<Reservation> reservations = reservationService.GetAllReservations()
+                .Where(r => r.Status != restaurant_management_system._2.Domain.Enums.ReservationStatus.Cancelled)
+                .ToList();
+
+            if (reservations.Count == 0)
+            {
+                Console.WriteLine("No active reservations found.");
+                Pause();
+                return;
+            }
+
+            Console.WriteLine("Active reservations:");
+            PrintReservations(reservations);
+
             try
             {
                 int reservationId = ReadInt("Reservation ID: ");
@@ -438,6 +386,7 @@ namespace restaurant_management_system._2.UI
                 Console.WriteLine();
                 Console.WriteLine("Reservation cancelled successfully!");
                 Console.WriteLine($"Reservation ID: {reservation.Id}");
+                Console.WriteLine($"Customer: {reservation.CustomerName}");
                 Console.WriteLine($"Status: {reservation.Status}");
             }
             catch (Exception ex)
@@ -535,19 +484,26 @@ namespace restaurant_management_system._2.UI
 
         private static void PrintReservations(List<Reservation> reservations)
         {
+            Console.WriteLine();
+            Console.WriteLine("{0,-5} {1,-10} {2,-18} {3,-8} {4,-18} {5,-18} {6,-12}",
+                "ID", "Table", "Customer", "Guests", "Start", "End", "Status");
+
+            Console.WriteLine(new string('-', 95));
+
             foreach (Reservation reservation in reservations)
             {
                 string tableNumber = reservation.Table != null
                     ? reservation.Table.Number.ToString()
                     : reservation.TableId.ToString();
 
-                Console.WriteLine("--------------------------------------");
-                Console.WriteLine($"Reservation ID: {reservation.Id}");
-                Console.WriteLine($"Table: {tableNumber}");
-                Console.WriteLine($"Guests: {reservation.GuestCount}");
-                Console.WriteLine($"Start: {reservation.StartTime}");
-                Console.WriteLine($"End: {reservation.EndTime}");
-                Console.WriteLine($"Status: {reservation.Status}");
+                Console.WriteLine("{0,-5} {1,-10} {2,-18} {3,-8} {4,-18} {5,-18} {6,-12}",
+                    reservation.Id,
+                    tableNumber,
+                    reservation.CustomerName,
+                    reservation.GuestCount,
+                    reservation.StartTime.ToString("yyyy-MM-dd HH:mm"),
+                    reservation.EndTime.ToString("yyyy-MM-dd HH:mm"),
+                    reservation.Status);
             }
         }
 
@@ -556,15 +512,35 @@ namespace restaurant_management_system._2.UI
             Console.Write(message);
             return int.Parse(Console.ReadLine()!);
         }
-
-        private static DateTime ReadDateTime(string message)
+        private static DateTime ReadStartDateTimeParts()
         {
-            Console.Write(message);
+            Console.WriteLine();
+            Console.WriteLine("Start time:");
 
-            return DateTime.ParseExact(
-                Console.ReadLine()!,
-                "yyyy-MM-dd HH:mm",
-                CultureInfo.InvariantCulture);
+            int year = ReadInt("Year: ");
+            int month = ReadInt("Month: ");
+            int day = ReadInt("Day: ");
+            int hour = ReadInt("Hour: ");
+            int minute = ReadInt("Minute: ");
+
+            return new DateTime(year, month, day, hour, minute, 0);
+        }
+
+        private static DateTime ReadEndTimeParts(DateTime startTime)
+        {
+            Console.WriteLine();
+            Console.WriteLine("End time:");
+
+            int hour = ReadInt("Hour: ");
+            int minute = ReadInt("Minute: ");
+
+            return new DateTime(
+                startTime.Year,
+                startTime.Month,
+                startTime.Day,
+                hour,
+                minute,
+                0);
         }
 
         private static void ComingSoon(string featureName)
