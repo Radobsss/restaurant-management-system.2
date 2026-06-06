@@ -12,10 +12,10 @@ namespace restaurant_management_system._2.Domain.Entities
 
         public bool IsActive { get; set; } = true;
 
+        public MenuItemType Type { get; set; }
+
         public int CategoryId { get; set; }
 
         public Category? Category { get; set; }
-
-        public MenuItemType Type { get; set; }
     }
 }
