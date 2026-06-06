@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
 using restaurant_management_system._2.Application.Interface;
 using restaurant_management_system._2.Domain.Entities;
 using restaurant_management_system._2.Domain.Enums;
-using restaurant_management_system._2.Infrastructure.Data;
 
 namespace restaurant_management_system._2.Service
 {
@@ -30,8 +28,7 @@ namespace restaurant_management_system._2.Service
 
         public Order CreateOrder(int tableId)
         {
-            Table? table = db.Tables
-                .FirstOrDefault(t => t.Id == tableId);
+            Table? table = tableRepository.GetById(tableId);
 
             if (table == null)
                 throw new ArgumentException("Table not found.");
@@ -42,8 +39,9 @@ namespace restaurant_management_system._2.Service
             if (table.IsReserved)
                 throw new ArgumentException("Cannot create order for a reserved table.");
 
-            bool hasOpenOrder = db.Orders
-                .Any(o => o.TableId == tableId && o.Status == OrderStatus.Open);
+            bool hasOpenOrder = orderRepository.HasOrderForTableWithStatus(
+                tableId,
+                OrderStatus.Open);
 
             if (hasOpenOrder)
                 throw new ArgumentException("This table already has an active order.");
@@ -56,8 +54,7 @@ namespace restaurant_management_system._2.Service
                 TotalAmount = 0
             };
 
-            db.Orders.Add(order);
-            db.SaveChanges();
+            orderRepository.Add(order);
 
             return order;
         }
@@ -67,8 +64,7 @@ namespace restaurant_management_system._2.Service
             if (quantity <= 0)
                 throw new ArgumentException("Quantity must be greater than 0.");
 
-            Order? order = db.Orders
-                .FirstOrDefault(o => o.Id == orderId);
+            Order? order = orderRepository.GetById(orderId);
 
             if (order == null)
                 throw new ArgumentException("Order not found.");
@@ -76,8 +72,7 @@ namespace restaurant_management_system._2.Service
             if (order.Status != OrderStatus.Open)
                 throw new ArgumentException("Cannot add items to closed or cancelled order.");
 
-            MenuItem? menuItem = db.MenuItems
-                .FirstOrDefault(m => m.Id == menuItemId);
+            MenuItem? menuItem = menuItemRepository.GetById(menuItemId);
 
             if (menuItem == null)
                 throw new ArgumentException("Menu item not found.");
@@ -85,16 +80,14 @@ namespace restaurant_management_system._2.Service
             if (!menuItem.IsActive)
                 throw new ArgumentException("Cannot add inactive menu item.");
 
-            OrderItem? existingItem = db.OrderItems
-                .FirstOrDefault(oi =>
-                    oi.OrderId == orderId &&
-                    oi.MenuItemId == menuItemId);
+            OrderItem? existingItem = orderItemRepository.GetByOrderAndMenuItem(
+                orderId,
+                menuItemId);
 
             if (existingItem != null)
             {
                 existingItem.Quantity += quantity;
-                db.OrderItems.Update(existingItem);
-                db.SaveChanges();
+                orderItemRepository.Update(existingItem);
 
                 return existingItem;
             }
@@ -108,17 +101,14 @@ namespace restaurant_management_system._2.Service
                 IsServed = false
             };
 
-            db.OrderItems.Add(orderItem);
-            db.SaveChanges();
+            orderItemRepository.Add(orderItem);
 
             return orderItem;
         }
 
         public void RemoveItemFromOrder(int orderItemId)
         {
-            OrderItem? orderItem = db.OrderItems
-                .Include(oi => oi.Order)
-                .FirstOrDefault(oi => oi.Id == orderItemId);
+            OrderItem? orderItem = orderItemRepository.GetById(orderItemId);
 
             if (orderItem == null)
                 throw new ArgumentException("Order item not found.");
@@ -129,14 +119,12 @@ namespace restaurant_management_system._2.Service
             if (orderItem.Order.Status != OrderStatus.Open)
                 throw new ArgumentException("Cannot remove items from closed or cancelled order.");
 
-            db.OrderItems.Remove(orderItem);
-            db.SaveChanges();
+            orderItemRepository.Delete(orderItem);
         }
 
         public Order ChangeOrderStatus(int orderId, OrderStatus status)
         {
-            Order? order = db.Orders
-                .FirstOrDefault(o => o.Id == orderId);
+            Order? order = orderRepository.GetById(orderId);
 
             if (order == null)
                 throw new ArgumentException("Order not found.");
@@ -146,23 +134,19 @@ namespace restaurant_management_system._2.Service
 
             order.Status = status;
 
-            db.Orders.Update(order);
-            db.SaveChanges();
+            orderRepository.Update(order);
 
             return order;
         }
 
         public decimal CalculateTotal(int orderId)
         {
-            Order? order = db.Orders
-                .FirstOrDefault(o => o.Id == orderId);
+            Order? order = orderRepository.GetById(orderId);
 
             if (order == null)
                 throw new ArgumentException("Order not found.");
 
-            List<OrderItem> orderItems = db.OrderItems
-                .Where(oi => oi.OrderId == orderId)
-                .ToList();
+            List<OrderItem> orderItems = orderItemRepository.GetByOrderId(orderId);
 
             decimal total = orderItems
                 .Sum(oi => oi.Quantity * oi.UnitPrice);
@@ -172,8 +156,7 @@ namespace restaurant_management_system._2.Service
 
         public Order CloseOrder(int orderId)
         {
-            Order? order = db.Orders
-                .FirstOrDefault(o => o.Id == orderId);
+            Order? order = orderRepository.GetById(orderId);
 
             if (order == null)
                 throw new ArgumentException("Order not found.");
@@ -186,19 +169,18 @@ namespace restaurant_management_system._2.Service
             order.TotalAmount = total;
             order.Status = OrderStatus.Closed;
 
-            Table? table = db.Tables
-                .FirstOrDefault(t => t.Id == order.TableId);
+            Table? table = tableRepository.GetById(order.TableId);
 
             if (table != null)
             {
                 table.IsOccupied = false;
                 table.IsReserved = false;
+                table.ReservedBy = null;
 
-                db.Tables.Update(table);
+                tableRepository.Update(table);
             }
 
-            db.Orders.Update(order);
-            db.SaveChanges();
+            orderRepository.Update(order);
 
             return order;
         }

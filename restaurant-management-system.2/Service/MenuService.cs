@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
 using restaurant_management_system._2.Application.Interface;
 using restaurant_management_system._2.Domain.Entities;
 using restaurant_management_system._2.Domain.Enums;
-using restaurant_management_system._2.Infrastructure.Data;
-
 
 namespace restaurant_management_system._2.Service
 {
     public class MenuService
     {
-
         private readonly ICategoryRepository categoryRepository;
         private readonly IMenuItemRepository menuItemRepository;
 
@@ -24,7 +20,6 @@ namespace restaurant_management_system._2.Service
             this.menuItemRepository = menuItemRepository;
         }
 
-
         public Category AddCategory(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -32,10 +27,9 @@ namespace restaurant_management_system._2.Service
 
             string trimmedName = name.Trim();
 
-            bool exists = db.Categories
-                .Any(c => c.Name.ToLower() == trimmedName.ToLower());
+            Category? existingCategory = categoryRepository.GetByName(trimmedName);
 
-            if (exists)
+            if (existingCategory != null)
                 throw new ArgumentException("Category with this name already exists.");
 
             Category category = new Category
@@ -43,15 +37,14 @@ namespace restaurant_management_system._2.Service
                 Name = trimmedName
             };
 
-            db.Categories.Add(category);
-            db.SaveChanges();
+            categoryRepository.Add(category);
 
             return category;
         }
 
         public List<Category> GetAllCategories()
         {
-            return db.Categories
+            return categoryRepository.GetAll()
                 .OrderBy(c => c.Name)
                 .ToList();
         }
@@ -68,18 +61,16 @@ namespace restaurant_management_system._2.Service
             if (price <= 0)
                 throw new ArgumentException("Price must be greater than 0.");
 
-            Category? category = db.Categories
-                .FirstOrDefault(c => c.Id == categoryId);
+            Category? category = categoryRepository.GetById(categoryId);
 
             if (category == null)
                 throw new ArgumentException("Category not found.");
 
             string trimmedName = name.Trim();
 
-            bool exists = db.MenuItems
-                .Any(m => m.Name.ToLower() == trimmedName.ToLower());
+            MenuItem? existingItem = menuItemRepository.GetByName(trimmedName);
 
-            if (exists)
+            if (existingItem != null)
                 throw new ArgumentException("Menu item with this name already exists.");
 
             MenuItem menuItem = new MenuItem
@@ -91,8 +82,7 @@ namespace restaurant_management_system._2.Service
                 IsActive = true
             };
 
-            db.MenuItems.Add(menuItem);
-            db.SaveChanges();
+            menuItemRepository.Add(menuItem);
 
             return menuItem;
         }
@@ -102,24 +92,21 @@ namespace restaurant_management_system._2.Service
             if (newPrice <= 0)
                 throw new ArgumentException("Price must be greater than 0.");
 
-            MenuItem? menuItem = db.MenuItems
-                .FirstOrDefault(m => m.Id == menuItemId);
+            MenuItem? menuItem = menuItemRepository.GetById(menuItemId);
 
             if (menuItem == null)
                 throw new ArgumentException("Menu item not found.");
 
             menuItem.Price = newPrice;
 
-            db.MenuItems.Update(menuItem);
-            db.SaveChanges();
+            menuItemRepository.Update(menuItem);
 
             return menuItem;
         }
 
         public MenuItem HideMenuItem(int menuItemId)
         {
-            MenuItem? menuItem = db.MenuItems
-                .FirstOrDefault(m => m.Id == menuItemId);
+            MenuItem? menuItem = menuItemRepository.GetById(menuItemId);
 
             if (menuItem == null)
                 throw new ArgumentException("Menu item not found.");
@@ -129,30 +116,24 @@ namespace restaurant_management_system._2.Service
 
             menuItem.IsActive = false;
 
-            db.MenuItems.Update(menuItem);
-            db.SaveChanges();
+            menuItemRepository.Update(menuItem);
 
             return menuItem;
         }
 
         public List<MenuItem> GetActiveMenuItems()
         {
-            return db.MenuItems
-                .Include(m => m.Category)
-                .Where(m => m.IsActive)
-                .OrderBy(m => m.Category!.Name)
+            return menuItemRepository.GetActive()
+                .OrderBy(m => m.Category != null ? m.Category.Name : "")
                 .ThenBy(m => m.Name)
                 .ToList();
         }
 
         public Dictionary<string, List<MenuItem>> GetActiveItemsGroupedByCategory()
         {
-            return db.MenuItems
-                .Include(m => m.Category)
-                .Where(m => m.IsActive)
-                .OrderBy(m => m.Category!.Name)
+            return menuItemRepository.GetActive()
+                .OrderBy(m => m.Category != null ? m.Category.Name : "")
                 .ThenBy(m => m.Name)
-                .AsEnumerable()
                 .GroupBy(m => m.Category != null ? m.Category.Name : "No category")
                 .ToDictionary(
                     group => group.Key,
