@@ -13,7 +13,7 @@ namespace restaurant_management_system._2.Migrations
 {
     [DbContext(typeof(RestaurantDbContext))]
     [Migration("20260522203136_test")]
-    partial class test
+    partial class Test
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

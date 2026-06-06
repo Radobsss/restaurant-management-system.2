@@ -9,7 +9,7 @@ namespace restaurant_management_system._2.Domain.Entities
 {
     public class Order
     {
-        public Table Table { get; set; }
+        public Table? Table { get; set; }
         public List<OrderItem> Items { get; set; } = new List<OrderItem>();
         public OrderStatus Status { get; set; }
         public int Id { get; set; }

@@ -8,6 +8,7 @@ namespace restaurant_management_system._2.Domain.Entities
         public int Id { get; set; }
 
         public int TableId { get; set; }
+
         public Table? Table { get; set; }
 
         public DateTime StartTime { get; set; }

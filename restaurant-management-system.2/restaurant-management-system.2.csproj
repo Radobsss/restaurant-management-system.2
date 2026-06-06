@@ -6,6 +6,7 @@
     <RootNamespace>restaurant_management_system._2</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <StartupObject>restaurant_management_system._2.UI.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
