@@ -1,5 +1,6 @@
 ﻿using restaurant_management_system._2.Domain.Entities;
 using restaurant_management_system._2.Service;
+using restaurant_management_system._2.Domain.Enums;
 
 namespace restaurant_management_system._2.UI
 {
@@ -8,11 +9,13 @@ namespace restaurant_management_system._2.UI
 
         private readonly TableService tableService;
         private readonly ReservationService reservationService;
+        private readonly MenuService menuService;
 
-        public RestaurantUI(TableService tableService, ReservationService reservationService)
+        public RestaurantUI(TableService tableService,ReservationService reservationService,MenuService menuService)
         {
             this.tableService = tableService;
             this.reservationService = reservationService;
+            this.menuService = menuService;
         }
 
         public void Run()
@@ -42,7 +45,7 @@ namespace restaurant_management_system._2.UI
                         break;
 
                     case "2":
-                        ComingSoon("Menu management");
+                        MenuManagementMenu();
                         break;
 
                     case "3":
@@ -69,6 +72,329 @@ namespace restaurant_management_system._2.UI
                         Pause();
                         break;
                 }
+            }
+        }
+
+        private void MenuManagementMenu()
+        {
+            while (true)
+            {
+                Console.WriteLine();
+                Console.WriteLine("======================================");
+                Console.WriteLine("            MENU MANAGEMENT");
+                Console.WriteLine("======================================");
+                Console.WriteLine("1. Show categories");
+                Console.WriteLine("2. Add category");
+                Console.WriteLine("3. Show active menu items");
+                Console.WriteLine("4. Add menu item");
+                Console.WriteLine("5. Change menu item price");
+                Console.WriteLine("6. Hide menu item");
+                Console.WriteLine("0. Back");
+                Console.WriteLine("======================================");
+
+                Console.Write("Choose option: ");
+                string? choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        ShowCategoriesUI();
+                        break;
+
+                    case "2":
+                        AddCategoryUI();
+                        break;
+
+                    case "3":
+                        ShowActiveMenuItemsUI();
+                        break;
+
+                    case "4":
+                        AddMenuItemUI();
+                        break;
+
+                    case "5":
+                        ChangeMenuItemPriceUI();
+                        break;
+
+                    case "6":
+                        HideMenuItemUI();
+                        break;
+
+                    case "0":
+                        return;
+
+                    default:
+                        Console.WriteLine("Invalid option.");
+                        Pause();
+                        break;
+                }
+            }
+        }
+        private void ShowCategoriesUI()
+        {
+            Console.WriteLine();
+            Console.WriteLine("======================================");
+            Console.WriteLine("              CATEGORIES");
+            Console.WriteLine("======================================");
+
+            List<Category> categories = menuService.GetAllCategories();
+
+            if (categories.Count == 0)
+            {
+                Console.WriteLine("No categories found.");
+                Pause();
+                return;
+            }
+
+            PrintCategories(categories);
+            Pause();
+        }
+
+        private void AddCategoryUI()
+        {
+            Console.WriteLine();
+            Console.WriteLine("======================================");
+            Console.WriteLine("             ADD CATEGORY");
+            Console.WriteLine("======================================");
+
+            try
+            {
+                Console.Write("Category name: ");
+                string name = Console.ReadLine()!;
+
+                Category category = menuService.AddCategory(name);
+
+                Console.WriteLine();
+                Console.WriteLine("Category added successfully!");
+                Console.WriteLine($"ID: {category.Id}");
+                Console.WriteLine($"Name: {category.Name}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Error: " + ex.Message);
+            }
+
+            Pause();
+        }
+
+        private void ShowActiveMenuItemsUI()
+        {
+            Console.WriteLine();
+            Console.WriteLine("======================================");
+            Console.WriteLine("          ACTIVE MENU ITEMS");
+            Console.WriteLine("======================================");
+
+            List<MenuItem> items = menuService.GetActiveMenuItems();
+
+            if (items.Count == 0)
+            {
+                Console.WriteLine("No active menu items found.");
+                Pause();
+                return;
+            }
+
+            PrintMenuItems(items);
+            Pause();
+        }
+
+        private void AddMenuItemUI()
+        {
+            Console.WriteLine();
+            Console.WriteLine("======================================");
+            Console.WriteLine("             ADD MENU ITEM");
+            Console.WriteLine("======================================");
+
+            List<Category> categories = menuService.GetAllCategories();
+
+            if (categories.Count == 0)
+            {
+                Console.WriteLine("No categories found. Add category first.");
+                Pause();
+                return;
+            }
+
+            Console.WriteLine("Available categories:");
+            PrintCategories(categories);
+
+            try
+            {
+                Console.Write("Menu item name: ");
+                string name = Console.ReadLine()!;
+
+                decimal price = ReadDecimal("Price: ");
+
+                MenuItemType type = ReadMenuItemType();
+
+                int categoryId = ReadInt("Category ID: ");
+
+                MenuItem item = menuService.AddMenuItem(
+                    name,
+                    price,
+                    type,
+                    categoryId);
+
+                Console.WriteLine();
+                Console.WriteLine("Menu item added successfully!");
+                Console.WriteLine($"ID: {item.Id}");
+                Console.WriteLine($"Name: {item.Name}");
+                Console.WriteLine($"Price: {item.Price:F2} lv.");
+                Console.WriteLine($"Type: {item.Type}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Error: " + ex.Message);
+            }
+
+            Pause();
+        }
+
+        private void ChangeMenuItemPriceUI()
+        {
+            Console.WriteLine();
+            Console.WriteLine("======================================");
+            Console.WriteLine("        CHANGE MENU ITEM PRICE");
+            Console.WriteLine("======================================");
+
+            List<MenuItem> items = menuService.GetActiveMenuItems();
+
+            if (items.Count == 0)
+            {
+                Console.WriteLine("No active menu items found.");
+                Pause();
+                return;
+            }
+
+            PrintMenuItems(items);
+
+            try
+            {
+                int menuItemId = ReadInt("Menu item ID: ");
+                decimal newPrice = ReadDecimal("New price: ");
+
+                MenuItem item = menuService.ChangeMenuItemPrice(menuItemId, newPrice);
+
+                Console.WriteLine();
+                Console.WriteLine("Price changed successfully!");
+                Console.WriteLine($"Item: {item.Name}");
+                Console.WriteLine($"New price: {item.Price:F2} lv.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Error: " + ex.Message);
+            }
+
+            Pause();
+        }
+
+        private void HideMenuItemUI()
+        {
+            Console.WriteLine();
+            Console.WriteLine("======================================");
+            Console.WriteLine("             HIDE MENU ITEM");
+            Console.WriteLine("======================================");
+
+            List<MenuItem> items = menuService.GetActiveMenuItems();
+
+            if (items.Count == 0)
+            {
+                Console.WriteLine("No active menu items found.");
+                Pause();
+                return;
+            }
+
+            PrintMenuItems(items);
+
+            try
+            {
+                int menuItemId = ReadInt("Menu item ID: ");
+
+                MenuItem item = menuService.HideMenuItem(menuItemId);
+
+                Console.WriteLine();
+                Console.WriteLine($"Menu item '{item.Name}' hidden successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Error: " + ex.Message);
+            }
+
+            Pause();
+        }
+
+        private static void PrintCategories(List<Category> categories)
+        {
+            Console.WriteLine();
+            Console.WriteLine("{0,-5} {1,-20}", "ID", "Name");
+            Console.WriteLine(new string('-', 30));
+
+            foreach (Category category in categories)
+            {
+                Console.WriteLine("{0,-5} {1,-20}",
+                    category.Id,
+                    category.Name);
+            }
+        }
+
+        private static void PrintMenuItems(List<MenuItem> items)
+        {
+            Console.WriteLine();
+            Console.WriteLine("{0,-5} {1,-20} {2,-10} {3,-12} {4,-15}",
+                "ID", "Name", "Price", "Type", "Category");
+
+            Console.WriteLine(new string('-', 70));
+
+            foreach (MenuItem item in items)
+            {
+                string categoryName = item.Category != null
+                    ? item.Category.Name
+                    : "-";
+
+                Console.WriteLine("{0,-5} {1,-20} {2,-10:F2} {3,-12} {4,-15}",
+                    item.Id,
+                    item.Name,
+                    item.Price,
+                    item.Type,
+                    categoryName);
+            }
+        }
+
+        private static decimal ReadDecimal(string message)
+        {
+            Console.Write(message);
+            return decimal.Parse(Console.ReadLine()!);
+        }
+
+        private static MenuItemType ReadMenuItemType()
+        {
+            Console.WriteLine();
+            Console.WriteLine("Choose menu item type:");
+            Console.WriteLine("1. Food");
+            Console.WriteLine("2. Drink");
+            Console.WriteLine("3. Dessert");
+            Console.WriteLine("4. Alcohol");
+            Console.WriteLine("5. Other");
+
+            int choice = ReadInt("Option: ");
+
+            switch (choice)
+            {
+                case 1:
+                    return MenuItemType.Food;
+                case 2:
+                    return MenuItemType.Drink;
+                case 3:
+                    return MenuItemType.Dessert;
+                case 4:
+                    return MenuItemType.Alcohol;
+                case 5:
+                    return MenuItemType.Other;
+                default:
+                    throw new ArgumentException("Invalid menu item type.");
             }
         }
 

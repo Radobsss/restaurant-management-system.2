@@ -17,6 +17,8 @@ namespace restaurant_management_system._2.UI
             SeedTables(db);
             SeedMenu(db);
 
+            MenuService menuService = new MenuService(db);
+
             ITableRepository tableRepository = new FileTableRepository(db);
             IReservationRepository reservationRepository = new FileReservationRepository(db);
 
@@ -26,7 +28,9 @@ namespace restaurant_management_system._2.UI
                 reservationRepository,
                 tableRepository);
 
-            RestaurantUI ui = new RestaurantUI(tableService, reservationService);
+            RestaurantUI ui = new RestaurantUI(tableService, reservationService, menuService);
+
+            
 
             ui.Run();
         }
