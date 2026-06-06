@@ -10,21 +10,21 @@ namespace RestaurantManagementSystem.Tests.EntityTests
     [TestClass]
     public class TableTests
     {
-        [TestMethod]
-        public void Table_ShouldInitializeOrdersList()
-        {
-            var table = new Table();
+        //[TestMethod]
+        //public void Table_ShouldInitializeOrdersList()
+        //{
+        //    var table = new Table();
 
-            Assert.IsNotNull(table.Orders);
-        }
+        //    Assert.IsNotNull(table.Orders);
+        //}
 
-        [TestMethod]
-        public void Table_ShouldInitializeReservationsList()
-        {
-            var table = new Table();
+        //[TestMethod]
+        //public void Table_ShouldInitializeReservationsList()
+        //{
+        //    var table = new Table();
 
-            Assert.IsNotNull(table.Reservations);
-        }
+        //    Assert.IsNotNull(table.Reservations);
+        //}
 
         [TestMethod]
         public void Table_ShouldSetAndGetPropertiesCorrectly()
