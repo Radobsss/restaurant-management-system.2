@@ -17,8 +17,6 @@ namespace restaurant_management_system._2.UI
             SeedTables(db);
             SeedMenu(db);
 
-            MenuService menuService = new MenuService(db);
-
             ITableRepository tableRepository = new FileTableRepository(db);
             IReservationRepository reservationRepository = new FileReservationRepository(db);
 
@@ -28,9 +26,11 @@ namespace restaurant_management_system._2.UI
                 reservationRepository,
                 tableRepository);
 
-            RestaurantUI ui = new RestaurantUI(tableService, reservationService, menuService);
+            MenuService menuService = new MenuService(db);
 
-            
+            OrderService orderService = new OrderService(db);
+
+            RestaurantUI ui = new RestaurantUI(tableService, reservationService,menuService,orderService);
 
             ui.Run();
         }
@@ -41,30 +41,31 @@ namespace restaurant_management_system._2.UI
                 return;
 
             db.Tables.AddRange(
-                new Table { Number = 1, Capacity = 2, Location = "Window", IsOccupied = false, IsReserved = true, ReservedBy = "Pesho" },
+                new Table { Number = 1, Capacity = 2, Location = "Window", IsOccupied = false, IsReserved = false, ReservedBy = null },
                 new Table { Number = 2, Capacity = 2, Location = "Window", IsOccupied = false, IsReserved = false, ReservedBy = null },
-                new Table { Number = 3, Capacity = 4, Location = "Main hall", IsOccupied = true, IsReserved = false, ReservedBy = null },
+                new Table { Number = 3, Capacity = 4, Location = "Main hall", IsOccupied = false, IsReserved = false, ReservedBy = null },
                 new Table { Number = 4, Capacity = 4, Location = "Main hall", IsOccupied = false, IsReserved = false, ReservedBy = null },
-                new Table { Number = 5, Capacity = 6, Location = "Terrace", IsOccupied = true, IsReserved = false, ReservedBy = null },
+                new Table { Number = 5, Capacity = 6, Location = "Terrace", IsOccupied = false, IsReserved = false, ReservedBy = null },
                 new Table { Number = 6, Capacity = 6, Location = "Terrace", IsOccupied = false, IsReserved = false, ReservedBy = null },
-                new Table { Number = 7, Capacity = 8, Location = "VIP area", IsOccupied = true, IsReserved = false, ReservedBy = null },
+                new Table { Number = 7, Capacity = 8, Location = "VIP area", IsOccupied = false, IsReserved = false, ReservedBy = null },
                 new Table { Number = 8, Capacity = 8, Location = "VIP area", IsOccupied = false, IsReserved = false, ReservedBy = null },
-                new Table { Number = 9, Capacity = 2, Location = "Garden", IsOccupied = false, IsReserved = true, ReservedBy = "Ivan Ivanov" },
+                new Table { Number = 9, Capacity = 2, Location = "Garden", IsOccupied = false, IsReserved = false, ReservedBy = null },
                 new Table { Number = 10, Capacity = 2, Location = "Garden", IsOccupied = false, IsReserved = false, ReservedBy = null },
                 new Table { Number = 11, Capacity = 4, Location = "Main hall", IsOccupied = false, IsReserved = false, ReservedBy = null },
                 new Table { Number = 12, Capacity = 4, Location = "Main hall", IsOccupied = false, IsReserved = false, ReservedBy = null },
                 new Table { Number = 13, Capacity = 6, Location = "Terrace", IsOccupied = false, IsReserved = false, ReservedBy = null },
                 new Table { Number = 14, Capacity = 6, Location = "Terrace", IsOccupied = false, IsReserved = false, ReservedBy = null },
                 new Table { Number = 15, Capacity = 8, Location = "VIP area", IsOccupied = false, IsReserved = false, ReservedBy = null },
-                new Table { Number = 16, Capacity = 8, Location = "VIP area", IsOccupied = true, IsReserved = false, ReservedBy = null },
+                new Table { Number = 16, Capacity = 8, Location = "VIP area", IsOccupied = false, IsReserved = false, ReservedBy = null },
                 new Table { Number = 17, Capacity = 2, Location = "Window", IsOccupied = false, IsReserved = false, ReservedBy = null },
                 new Table { Number = 18, Capacity = 4, Location = "Garden", IsOccupied = false, IsReserved = false, ReservedBy = null },
-                new Table { Number = 19, Capacity = 6, Location = "Main hall", IsOccupied = true, IsReserved = false, ReservedBy = null },
-                new Table { Number = 20, Capacity = 10, Location = "VIP area", IsOccupied = false, IsReserved = true, ReservedBy = "Riana" }
+                new Table { Number = 19, Capacity = 6, Location = "Main hall", IsOccupied = false, IsReserved = false, ReservedBy = null },
+                new Table { Number = 20, Capacity = 10, Location = "VIP area", IsOccupied = false, IsReserved = false, ReservedBy = null }
             );
 
             db.SaveChanges();
         }
+
         static void SeedMenu(RestaurantDbContext db)
         {
             if (db.Categories.Any() || db.MenuItems.Any())
@@ -123,7 +124,7 @@ namespace restaurant_management_system._2.UI
                     Name = "Cake",
                     Price = 5.50m,
                     IsActive = true,
-                    Type = MenuItemType.Food,
+                    Type = MenuItemType.Dessert,
                     CategoryId = desserts.Id
                 }
             );

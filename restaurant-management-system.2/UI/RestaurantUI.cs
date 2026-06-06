@@ -10,12 +10,14 @@ namespace restaurant_management_system._2.UI
         private readonly TableService tableService;
         private readonly ReservationService reservationService;
         private readonly MenuService menuService;
+        private readonly OrderService orderService;
 
-        public RestaurantUI(TableService tableService,ReservationService reservationService,MenuService menuService)
+        public RestaurantUI(TableService tableService,ReservationService reservationService,MenuService menuService,OrderService orderService)
         {
             this.tableService = tableService;
             this.reservationService = reservationService;
             this.menuService = menuService;
+            this.orderService = orderService;
         }
 
         public void Run()
@@ -49,7 +51,7 @@ namespace restaurant_management_system._2.UI
                         break;
 
                     case "3":
-                        ComingSoon("Order management");
+                        OrderManagementMenu();
                         break;
 
                     case "4":
@@ -73,6 +75,221 @@ namespace restaurant_management_system._2.UI
                         break;
                 }
             }
+        }
+        private void OrderManagementMenu()
+        {
+            while (true)
+            {
+                Console.WriteLine();
+                Console.WriteLine("======================================");
+                Console.WriteLine("            ORDER MANAGEMENT");
+                Console.WriteLine("======================================");
+                Console.WriteLine("1. Create order");
+                Console.WriteLine("2. Add item to order");
+                Console.WriteLine("3. Remove item from order");
+                Console.WriteLine("4. Show order total");
+                Console.WriteLine("5. Close order");
+                Console.WriteLine("0. Back");
+                Console.WriteLine("======================================");
+
+                Console.Write("Choose option: ");
+                string? choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        CreateOrderUI();
+                        break;
+
+                    case "2":
+                        AddItemToOrderUI();
+                        break;
+
+                    case "3":
+                        RemoveItemFromOrderUI();
+                        break;
+
+                    case "4":
+                        ShowOrderTotalUI();
+                        break;
+
+                    case "5":
+                        CloseOrderUI();
+                        break;
+
+                    case "0":
+                        return;
+
+                    default:
+                        Console.WriteLine("Invalid option.");
+                        Pause();
+                        break;
+                }
+            }
+        }
+
+        private void CreateOrderUI()
+        {
+            Console.WriteLine();
+            Console.WriteLine("======================================");
+            Console.WriteLine("              CREATE ORDER");
+            Console.WriteLine("======================================");
+
+            List<Table> occupiedTables = tableService.GetOccupiedTables();
+
+            if (occupiedTables.Count == 0)
+            {
+                Console.WriteLine("No occupied tables found. Occupy a table first.");
+                Pause();
+                return;
+            }
+
+            Console.WriteLine("Occupied tables:");
+            PrintTables(occupiedTables);
+
+            try
+            {
+                int tableId = ReadInt("Table ID: ");
+
+                Order order = orderService.CreateOrder(tableId);
+
+                Console.WriteLine();
+                Console.WriteLine("Order created successfully!");
+                Console.WriteLine($"Order ID: {order.Id}");
+                Console.WriteLine($"Table ID: {order.TableId}");
+                Console.WriteLine($"Status: {order.Status}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Error: " + ex.Message);
+            }
+
+            Pause();
+        }
+
+        private void AddItemToOrderUI()
+        {
+            Console.WriteLine();
+            Console.WriteLine("======================================");
+            Console.WriteLine("           ADD ITEM TO ORDER");
+            Console.WriteLine("======================================");
+
+            List<MenuItem> items = menuService.GetActiveMenuItems();
+
+            if (items.Count == 0)
+            {
+                Console.WriteLine("No active menu items found.");
+                Pause();
+                return;
+            }
+
+            Console.WriteLine("Active menu items:");
+            PrintMenuItems(items);
+
+            try
+            {
+                int orderId = ReadInt("Order ID: ");
+                int menuItemId = ReadInt("Menu item ID: ");
+                int quantity = ReadInt("Quantity: ");
+
+                OrderItem orderItem = orderService.AddItemToOrder(
+                    orderId,
+                    menuItemId,
+                    quantity);
+
+                Console.WriteLine();
+                Console.WriteLine("Item added successfully!");
+                Console.WriteLine($"Order item ID: {orderItem.Id}");
+                Console.WriteLine($"Menu item ID: {orderItem.MenuItemId}");
+                Console.WriteLine($"Quantity: {orderItem.Quantity}");
+                Console.WriteLine($"Unit price: {orderItem.UnitPrice:F2} lv.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Error: " + ex.Message);
+            }
+
+            Pause();
+        }
+
+        private void RemoveItemFromOrderUI()
+        {
+            Console.WriteLine();
+            Console.WriteLine("======================================");
+            Console.WriteLine("        REMOVE ITEM FROM ORDER");
+            Console.WriteLine("======================================");
+
+            try
+            {
+                int orderItemId = ReadInt("Order item ID: ");
+
+                orderService.RemoveItemFromOrder(orderItemId);
+
+                Console.WriteLine();
+                Console.WriteLine("Item removed successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Error: " + ex.Message);
+            }
+
+            Pause();
+        }
+
+        private void ShowOrderTotalUI()
+        {
+            Console.WriteLine();
+            Console.WriteLine("======================================");
+            Console.WriteLine("             ORDER TOTAL");
+            Console.WriteLine("======================================");
+
+            try
+            {
+                int orderId = ReadInt("Order ID: ");
+
+                decimal total = orderService.CalculateTotal(orderId);
+
+                Console.WriteLine();
+                Console.WriteLine($"Total: {total:F2} lv.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Error: " + ex.Message);
+            }
+
+            Pause();
+        }
+
+        private void CloseOrderUI()
+        {
+            Console.WriteLine();
+            Console.WriteLine("======================================");
+            Console.WriteLine("              CLOSE ORDER");
+            Console.WriteLine("======================================");
+
+            try
+            {
+                int orderId = ReadInt("Order ID: ");
+
+                Order order = orderService.CloseOrder(orderId);
+
+                Console.WriteLine();
+                Console.WriteLine("Order closed successfully!");
+                Console.WriteLine($"Order ID: {order.Id}");
+                Console.WriteLine($"Total: {order.TotalAmount:F2} lv.");
+                Console.WriteLine($"Status: {order.Status}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Error: " + ex.Message);
+            }
+
+            Pause();
         }
 
         private void MenuManagementMenu()
