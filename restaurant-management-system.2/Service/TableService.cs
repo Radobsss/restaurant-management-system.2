@@ -32,6 +32,16 @@ namespace restaurant_management_system._2.Service
             return table;
         }
 
+        public Table GetTableByNumber(int tableNumber)
+        {
+            Table? table = tableRepository.GetByNumber(tableNumber);
+
+            if (table == null)
+                throw new ArgumentException("Table not found.");
+
+            return table;
+        }
+
         public List<Table> GetFreeTables()
         {
             return tableRepository.GetAll()
@@ -40,8 +50,35 @@ namespace restaurant_management_system._2.Service
                 .ToList();
         }
 
-        public Table ReserveTable(int tableNumber)
+        public List<Table> GetReservableTables()
         {
+            return tableRepository.GetAll()
+                .Where(t => !t.IsOccupied && !t.IsReserved)
+                .OrderBy(t => t.Number)
+                .ToList();
+        }
+
+        public List<Table> GetTablesAvailableForOccupy()
+        {
+            return tableRepository.GetAll()
+                .Where(t => !t.IsOccupied)
+                .OrderBy(t => t.Number)
+                .ToList();
+        }
+
+        public List<Table> GetOccupiedTables()
+        {
+            return tableRepository.GetAll()
+                .Where(t => t.IsOccupied)
+                .OrderBy(t => t.Number)
+                .ToList();
+        }
+
+        public Table ReserveTable(int tableNumber, string reservedBy)
+        {
+            if (string.IsNullOrWhiteSpace(reservedBy))
+                throw new ArgumentException("Reservation name cannot be empty.");
+
             Table? table = tableRepository.GetByNumber(tableNumber);
 
             if (table == null)
@@ -55,13 +92,14 @@ namespace restaurant_management_system._2.Service
 
             table.IsReserved = true;
             table.IsOccupied = false;
+            table.ReservedBy = reservedBy.Trim();
 
             tableRepository.Update(table);
 
             return table;
         }
 
-        public Table OccupyTable(int tableNumber)
+        public Table OccupyTable(int tableNumber, string? reservationName = null)
         {
             Table? table = tableRepository.GetByNumber(tableNumber);
 
@@ -71,8 +109,23 @@ namespace restaurant_management_system._2.Service
             if (table.IsOccupied)
                 throw new ArgumentException("Table is already occupied.");
 
+            if (table.IsReserved)
+            {
+                if (string.IsNullOrWhiteSpace(reservationName))
+                    throw new ArgumentException("This table is reserved. Reservation name is required.");
+
+                bool isCorrectName = string.Equals(
+                    table.ReservedBy?.Trim(),
+                    reservationName.Trim(),
+                    StringComparison.OrdinalIgnoreCase);
+
+                if (!isCorrectName)
+                    throw new ArgumentException("Reservation name is not correct.");
+            }
+
             table.IsOccupied = true;
             table.IsReserved = false;
+            table.ReservedBy = null;
 
             tableRepository.Update(table);
 
@@ -91,6 +144,7 @@ namespace restaurant_management_system._2.Service
 
             table.IsOccupied = false;
             table.IsReserved = false;
+            table.ReservedBy = null;
 
             tableRepository.Update(table);
 
@@ -111,6 +165,7 @@ namespace restaurant_management_system._2.Service
                 throw new ArgumentException("Cannot cancel reservation for occupied table.");
 
             table.IsReserved = false;
+            table.ReservedBy = null;
 
             tableRepository.Update(table);
 

@@ -16,7 +16,7 @@ namespace restaurant_management_system._2.Infrastructure.Data
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer(
-              @"Server=(localdb)\MSSQLLocalDB;Database=RestaurantManagementSystemDb;Trusted_Connection=True;TrustServerCertificate=True;");
+              @"Server=RADO-BOSSS\SQLEXPRESS02;Database=RestaurantManagementSystemDb;Trusted_Connection=True;TrustServerCertificate=True;");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

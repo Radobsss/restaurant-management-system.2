@@ -224,14 +224,29 @@ namespace restaurant_management_system._2.UI
             Console.WriteLine("             RESERVE TABLE");
             Console.WriteLine("======================================");
 
+            List<Table> reservableTables = tableService.GetReservableTables();
+
+            if (reservableTables.Count == 0)
+            {
+                Console.WriteLine("No free tables available for reservation.");
+                Pause();
+                return;
+            }
+
+            Console.WriteLine("Tables available for reservation:");
+            PrintTables(reservableTables);
+
             try
             {
                 int tableNumber = ReadInt("Table number: ");
 
-                Table table = tableService.ReserveTable(tableNumber);
+                Console.Write("Reservation name: ");
+                string reservedBy = Console.ReadLine()!;
+
+                Table table = tableService.ReserveTable(tableNumber, reservedBy);
 
                 Console.WriteLine();
-                Console.WriteLine($"Table {table.Number} reserved successfully.");
+                Console.WriteLine($"Table {table.Number} reserved successfully for {table.ReservedBy}.");
             }
             catch (Exception ex)
             {
@@ -249,11 +264,35 @@ namespace restaurant_management_system._2.UI
             Console.WriteLine("              OCCUPY TABLE");
             Console.WriteLine("======================================");
 
+            List<Table> availableTables = tableService.GetTablesAvailableForOccupy();
+
+            if (availableTables.Count == 0)
+            {
+                Console.WriteLine("No free or reserved tables available.");
+                Pause();
+                return;
+            }
+
+            Console.WriteLine("Tables available for occupying:");
+            PrintTables(availableTables);
+
             try
             {
                 int tableNumber = ReadInt("Table number: ");
 
-                Table table = tableService.OccupyTable(tableNumber);
+                Table selectedTable = availableTables
+                    .FirstOrDefault(t => t.Number == tableNumber)
+                    ?? throw new ArgumentException("This table is not available for occupying.");
+
+                string? reservationName = null;
+
+                if (selectedTable.IsReserved)
+                {
+                    Console.Write("Reservation name: ");
+                    reservationName = Console.ReadLine();
+                }
+
+                Table table = tableService.OccupyTable(tableNumber, reservationName);
 
                 Console.WriteLine();
                 Console.WriteLine($"Table {table.Number} occupied successfully.");
@@ -273,6 +312,18 @@ namespace restaurant_management_system._2.UI
             Console.WriteLine("======================================");
             Console.WriteLine("               FREE TABLE");
             Console.WriteLine("======================================");
+
+            List<Table> occupiedTables = tableService.GetOccupiedTables();
+
+            if (occupiedTables.Count == 0)
+            {
+                Console.WriteLine("No occupied tables found.");
+                Pause();
+                return;
+            }
+
+            Console.WriteLine("Occupied tables:");
+            PrintTables(occupiedTables);
 
             try
             {
@@ -298,6 +349,21 @@ namespace restaurant_management_system._2.UI
             Console.WriteLine("======================================");
             Console.WriteLine("       CANCEL TABLE RESERVATION");
             Console.WriteLine("======================================");
+
+            List<Table> reservedTables = tableService.GetAllTables()
+                .Where(t => t.IsReserved && !t.IsOccupied)
+                .OrderBy(t => t.Number)
+                .ToList();
+
+            if (reservedTables.Count == 0)
+            {
+                Console.WriteLine("No reserved tables found.");
+                Pause();
+                return;
+            }
+
+            Console.WriteLine("Reserved tables:");
+            PrintTables(reservedTables);
 
             try
             {
@@ -436,6 +502,12 @@ namespace restaurant_management_system._2.UI
 
         private static void PrintTables(List<Table> tables)
         {
+            Console.WriteLine();
+            Console.WriteLine("{0,-5} {1,-8} {2,-10} {3,-15} {4,-10} {5,-20}",
+                "ID", "Number", "Capacity", "Location", "Status", "Reserved by");
+
+            Console.WriteLine(new string('-', 75));
+
             foreach (Table table in tables)
             {
                 string status;
@@ -447,12 +519,17 @@ namespace restaurant_management_system._2.UI
                 else
                     status = "Free";
 
-                Console.WriteLine("--------------------------------------");
-                Console.WriteLine($"ID: {table.Id}");
-                Console.WriteLine($"Number: {table.Number}");
-                Console.WriteLine($"Capacity: {table.Capacity}");
-                Console.WriteLine($"Location: {table.Location}");
-                Console.WriteLine($"Status: {status}");
+                string reservedBy = string.IsNullOrWhiteSpace(table.ReservedBy)
+                    ? "-"
+                    : table.ReservedBy;
+
+                Console.WriteLine("{0,-5} {1,-8} {2,-10} {3,-15} {4,-10} {5,-20}",
+                    table.Id,
+                    table.Number,
+                    table.Capacity,
+                    table.Location,
+                    status,
+                    reservedBy);
             }
         }
 

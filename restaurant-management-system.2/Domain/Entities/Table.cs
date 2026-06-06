@@ -1,5 +1,4 @@
-﻿using restaurant_management_system._2.Domain.Entities;
-namespace restaurant_management_system._2.Domain.Entities
+﻿namespace restaurant_management_system._2.Domain.Entities
 {
     public class Table
     {
@@ -14,5 +13,7 @@ namespace restaurant_management_system._2.Domain.Entities
         public bool IsOccupied { get; set; }
 
         public bool IsReserved { get; set; }
+
+        public string? ReservedBy { get; set; }
     }
 }
