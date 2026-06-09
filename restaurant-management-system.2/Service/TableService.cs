@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using restaurant_management_system._2.Application.Interface;
+﻿using restaurant_management_system._2.Application.Interface;
 using restaurant_management_system._2.Domain.Entities;
 
 namespace restaurant_management_system._2.Service
@@ -22,26 +19,7 @@ namespace restaurant_management_system._2.Service
                 .ToList();
         }
 
-        public Table GetTableById(int tableId)
-        {
-            Table? table = tableRepository.GetById(tableId);
-
-            if (table == null)
-                throw new ArgumentException("Table not found.");
-
-            return table;
-        }
-
-        public Table GetTableByNumber(int tableNumber)
-        {
-            Table? table = tableRepository.GetByNumber(tableNumber);
-
-            if (table == null)
-                throw new ArgumentException("Table not found.");
-
-            return table;
-        }
-
+      
         public List<Table> GetFreeTables()
         {
             return tableRepository.GetAll()
@@ -50,13 +28,7 @@ namespace restaurant_management_system._2.Service
                 .ToList();
         }
 
-        public List<Table> GetReservableTables()
-        {
-            return tableRepository.GetAll()
-                .Where(t => !t.IsOccupied && !t.IsReserved)
-                .OrderBy(t => t.Number)
-                .ToList();
-        }
+      
 
         public List<Table> GetTablesAvailableForOccupy()
         {
@@ -74,30 +46,7 @@ namespace restaurant_management_system._2.Service
                 .ToList();
         }
 
-        public Table ReserveTable(int tableNumber, string reservedBy)
-        {
-            if (string.IsNullOrWhiteSpace(reservedBy))
-                throw new ArgumentException("Reservation name cannot be empty.");
-
-            Table? table = tableRepository.GetByNumber(tableNumber);
-
-            if (table == null)
-                throw new ArgumentException("Table not found.");
-
-            if (table.IsOccupied)
-                throw new ArgumentException("Occupied table cannot be reserved.");
-
-            if (table.IsReserved)
-                throw new ArgumentException("Table is already reserved.");
-
-            table.IsReserved = true;
-            table.IsOccupied = false;
-            table.ReservedBy = reservedBy.Trim();
-
-            tableRepository.Update(table);
-
-            return table;
-        }
+   
 
         public Table OccupyTable(int tableNumber, string? reservationName = null)
         {
@@ -151,25 +100,6 @@ namespace restaurant_management_system._2.Service
             return table;
         }
 
-        public Table CancelReservation(int tableNumber)
-        {
-            Table? table = tableRepository.GetByNumber(tableNumber);
-
-            if (table == null)
-                throw new ArgumentException("Table not found.");
-
-            if (!table.IsReserved)
-                throw new ArgumentException("Table is not reserved.");
-
-            if (table.IsOccupied)
-                throw new ArgumentException("Cannot cancel reservation for occupied table.");
-
-            table.IsReserved = false;
-            table.ReservedBy = null;
-
-            tableRepository.Update(table);
-
-            return table;
-        }
+       
     }
 }
