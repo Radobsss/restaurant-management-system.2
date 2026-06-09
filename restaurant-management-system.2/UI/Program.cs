@@ -19,17 +19,17 @@ namespace restaurant_management_system._2.UI
 
             ITableRepository tableRepository = new FileTableRepository(db);
             IReservationRepository reservationRepository = new FileReservationRepository(db);
+            ICategoryRepository categoryRepository = new FileCategoryRepository(db);
+            IMenuItemRepository menuItemRepository = new FileMenuItemRepository(db);
+            IOrderRepository orderRepository = new FileOrderRepository(db);
+            IOrderItemRepository orderItemRepository = new FileOrderItemRepository(db);
+            IPaymentRepository paymentRepository = new FilePaymentRepository(db);
 
             TableService tableService = new TableService(tableRepository);
 
             ReservationService reservationService = new ReservationService(
                 reservationRepository,
                 tableRepository);
-
-            ICategoryRepository categoryRepository = new FileCategoryRepository(db);
-            IMenuItemRepository menuItemRepository = new FileMenuItemRepository(db);
-            IOrderRepository orderRepository = new FileOrderRepository(db);
-            IOrderItemRepository orderItemRepository = new FileOrderItemRepository(db);
 
             MenuService menuService = new MenuService(
                 categoryRepository,
@@ -41,7 +41,16 @@ namespace restaurant_management_system._2.UI
                 tableRepository,
                 menuItemRepository);
 
-            RestaurantUI ui = new RestaurantUI(tableService, reservationService,menuService,orderService);
+            PaymentService paymentService = new PaymentService(
+                paymentRepository,
+                orderRepository);
+
+            RestaurantUI ui = new RestaurantUI(
+                tableService,
+                reservationService,
+                menuService,
+                orderService,
+                paymentService);
 
             ui.Run();
         }

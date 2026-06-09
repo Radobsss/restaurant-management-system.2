@@ -1,6 +1,6 @@
 ﻿using restaurant_management_system._2.Domain.Entities;
-using restaurant_management_system._2.Service;
 using restaurant_management_system._2.Domain.Enums;
+using restaurant_management_system._2.Service;
 
 namespace restaurant_management_system._2.UI
 {
@@ -11,13 +11,15 @@ namespace restaurant_management_system._2.UI
         private readonly ReservationService reservationService;
         private readonly MenuService menuService;
         private readonly OrderService orderService;
+        private readonly PaymentService paymentService;
 
-        public RestaurantUI(TableService tableService,ReservationService reservationService,MenuService menuService,OrderService orderService)
+        public RestaurantUI(TableService tableService, ReservationService reservationService, MenuService menuService, OrderService orderService, PaymentService paymentService)
         {
             this.tableService = tableService;
             this.reservationService = reservationService;
             this.menuService = menuService;
             this.orderService = orderService;
+            this.paymentService = paymentService;
         }
 
         public void Run()
@@ -59,7 +61,7 @@ namespace restaurant_management_system._2.UI
                         break;
 
                     case "5":
-                        ComingSoon("Payment management");
+                        PaymentManagementMenu();
                         break;
 
                     case "6":
@@ -205,7 +207,234 @@ namespace restaurant_management_system._2.UI
 
             Pause();
         }
+        private void PaymentManagementMenu()
+        {
+            while (true)
+            {
+                Console.WriteLine();
+                Console.WriteLine("======================================");
+                Console.WriteLine("          PAYMENT MANAGEMENT");
+                Console.WriteLine("======================================");
+                Console.WriteLine("1. Register payment");
+                Console.WriteLine("2. Show all payments");
+                Console.WriteLine("3. Show payments by order");
+                Console.WriteLine("0. Back");
+                Console.WriteLine("======================================");
 
+                Console.Write("Choose option: ");
+                string? choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        RegisterPaymentUI();
+                        break;
+
+                    case "2":
+                        ShowAllPaymentsUI();
+                        break;
+
+                    case "3":
+                        ShowPaymentsByOrderUI();
+                        break;
+
+                    case "0":
+                        return;
+
+                    default:
+                        Console.WriteLine("Invalid option.");
+                        Pause();
+                        break;
+                }
+            }
+        }
+
+        private void RegisterPaymentUI()
+        {
+            Console.WriteLine();
+            Console.WriteLine("======================================");
+            Console.WriteLine("           REGISTER PAYMENT");
+            Console.WriteLine("======================================");
+
+            List<Order> orders = paymentService.GetOrdersAvailableForPayment();
+
+            if (orders.Count == 0)
+            {
+                Console.WriteLine("No orders available for payment.");
+                Pause();
+                return;
+            }
+
+            Console.WriteLine("Orders available for payment:");
+            PrintOrdersForPayment(orders);
+
+            try
+            {
+                int orderId = ReadInt("Order ID: ");
+
+                bool canBePaid = orders.Any(o => o.Id == orderId);
+
+                if (!canBePaid)
+                    throw new ArgumentException("This order is not available for payment.");
+
+                PaymentMethod method = ReadPaymentMethod();
+
+                Payment payment = paymentService.RegisterPayment(orderId, method);
+
+                Console.WriteLine();
+                Console.WriteLine("Payment registered successfully!");
+                Console.WriteLine($"Payment ID: {payment.Id}");
+                Console.WriteLine($"Order ID: {payment.OrderId}");
+                Console.WriteLine($"Amount: {payment.Amount:F2} lv.");
+                Console.WriteLine($"Method: {payment.Method}");
+                Console.WriteLine($"Paid at: {payment.PaidAt:yyyy-MM-dd HH:mm}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Error: " + ex.Message);
+            }
+
+            Pause();
+        }
+
+        private void ShowAllPaymentsUI()
+        {
+            Console.WriteLine();
+            Console.WriteLine("======================================");
+            Console.WriteLine("             ALL PAYMENTS");
+            Console.WriteLine("======================================");
+
+            List<Payment> payments = paymentService.GetAllPayments();
+
+            if (payments.Count == 0)
+            {
+                Console.WriteLine("No payments found.");
+                Pause();
+                return;
+            }
+
+            PrintPayments(payments);
+            Pause();
+        }
+
+        private void ShowPaymentsByOrderUI()
+        {
+            Console.WriteLine();
+            Console.WriteLine("======================================");
+            Console.WriteLine("          PAYMENTS BY ORDER");
+            Console.WriteLine("======================================");
+
+            List<Order> orders = paymentService.GetClosedOrders();
+
+            if (orders.Count == 0)
+            {
+                Console.WriteLine("No closed orders found.");
+                Pause();
+                return;
+            }
+
+            Console.WriteLine("Closed orders:");
+            PrintOrdersForPayment(orders);
+
+            try
+            {
+                int orderId = ReadInt("Order ID: ");
+
+                bool orderExists = orders.Any(o => o.Id == orderId);
+
+                if (!orderExists)
+                    throw new ArgumentException("Order not found in closed orders.");
+
+                List<Payment> payments = paymentService.GetPaymentsForOrder(orderId);
+
+                if (payments.Count == 0)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("No payments found for this order.");
+                    Pause();
+                    return;
+                }
+
+                PrintPayments(payments);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Error: " + ex.Message);
+            }
+
+            Pause();
+        }
+        private void PrintOrdersForPayment(List<Order> orders)
+        {
+            Console.WriteLine();
+            Console.WriteLine("{0,-8} {1,-8} {2,-20} {3,-12} {4,-12}",
+                "Order", "Table", "Created at", "Total", "Payment");
+
+            Console.WriteLine(new string('-', 70));
+
+            foreach (Order order in orders)
+            {
+                List<Payment> payments = paymentService.GetPaymentsForOrder(order.Id);
+
+                string paymentStatus = payments.Count > 0
+                    ? "Paid"
+                    : "Not paid";
+
+                Console.WriteLine("{0,-8} {1,-8} {2,-20} {3,-12:F2} {4,-12}",
+                    order.Id,
+                    order.TableId,
+                    order.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
+                    order.TotalAmount,
+                    paymentStatus);
+            }
+        }
+        private static void PrintPayments(List<Payment> payments)
+        {
+            Console.WriteLine();
+            Console.WriteLine("{0,-8} {1,-8} {2,-12} {3,-12} {4,-20}",
+                "ID", "Order", "Amount", "Method", "Paid at");
+
+            Console.WriteLine(new string('-', 65));
+
+            foreach (Payment payment in payments)
+            {
+                Console.WriteLine("{0,-8} {1,-8} {2,-12:F2} {3,-12} {4,-20}",
+                    payment.Id,
+                    payment.OrderId,
+                    payment.Amount,
+                    payment.Method,
+                    payment.PaidAt.ToString("yyyy-MM-dd HH:mm"));
+            }
+        }
+
+        private static PaymentMethod ReadPaymentMethod()
+        {
+            while (true)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Payment method:");
+                Console.WriteLine("1. Cash");
+                Console.WriteLine("2. Card");
+
+                Console.Write("Choose payment method: ");
+                string? choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        return PaymentMethod.Cash;
+
+                    case "2":
+                        return PaymentMethod.Card;
+
+                    default:
+                        Console.WriteLine("Invalid payment method.");
+                        break;
+                }
+            }
+        }
         private void ReservationsByDateReportUI()
         {
             Console.WriteLine();

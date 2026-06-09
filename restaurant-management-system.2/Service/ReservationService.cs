@@ -128,6 +128,7 @@ namespace restaurant_management_system._2.Service
                 if (!hasOtherActiveReservations && !table.IsOccupied)
                 {
                     table.IsReserved = false;
+                    table.ReservedBy = null;
                     tableRepository.Update(table);
                 }
             }
