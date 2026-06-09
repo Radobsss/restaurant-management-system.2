@@ -26,6 +26,23 @@ namespace restaurant_management_system._2.Service
             this.menuItemRepository = menuItemRepository;
         }
 
+        public List<Order> GetAllOrders()
+        {
+            return orderRepository.GetAll()
+                .OrderByDescending(o => o.CreatedAt)
+                .ToList();
+        }
+
+        public List<OrderItem> GetOrderItems(int orderId)
+        {
+            Order? order = orderRepository.GetById(orderId);
+
+            if (order == null)
+                throw new ArgumentException("Order not found.");
+
+            return orderItemRepository.GetByOrderId(orderId);
+        }
+
         public Order CreateOrder(int tableId)
         {
             Table? table = tableRepository.GetById(tableId);

@@ -112,11 +112,11 @@ namespace restaurant_management_system._2.UI
                         break;
 
                     case "4":
-                        ComingSoon("Daily revenue report");
+                        DailyRevenueReportUI();
                         break;
 
                     case "5":
-                        ComingSoon("Most ordered items report");
+                        MostOrderedItemsReportUI();
                         break;
 
                     case "0":
@@ -128,6 +128,141 @@ namespace restaurant_management_system._2.UI
                         break;
                 }
             }
+        }
+        private void DailyRevenueReportUI()
+        {
+            Console.WriteLine();
+            Console.WriteLine("======================================");
+            Console.WriteLine("          DAILY REVENUE REPORT");
+            Console.WriteLine("======================================");
+
+            try
+            {
+                int year = ReadInt("Year: ");
+                int month = ReadInt("Month: ");
+                int day = ReadInt("Day: ");
+
+                DateTime selectedDate = new DateTime(year, month, day);
+
+                List<Order> orders = orderService.GetAllOrders()
+                    .Where(o =>
+                        o.Status == OrderStatus.Closed &&
+                        o.CreatedAt.Date == selectedDate.Date)
+                    .OrderBy(o => o.CreatedAt)
+                    .ToList();
+
+                if (orders.Count == 0)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("No closed orders found for this date.");
+                    Pause();
+                    return;
+                }
+
+                decimal totalRevenue = orders.Sum(o => o.TotalAmount);
+
+                Console.WriteLine();
+                Console.WriteLine($"Date: {selectedDate:yyyy-MM-dd}");
+                Console.WriteLine($"Closed orders: {orders.Count}");
+                Console.WriteLine($"Total revenue: {totalRevenue:F2} lv.");
+
+                Console.WriteLine();
+                Console.WriteLine("{0,-8} {1,-10} {2,-20} {3,-12}",
+                    "Order", "Table", "Created at", "Total");
+
+                Console.WriteLine(new string('-', 55));
+
+                foreach (Order order in orders)
+                {
+                    Console.WriteLine("{0,-8} {1,-10} {2,-20} {3,-12:F2}",
+                        order.Id,
+                        order.TableId,
+                        order.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
+                        order.TotalAmount);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Error: " + ex.Message);
+            }
+
+            Pause();
+        }
+
+        private void MostOrderedItemsReportUI()
+        {
+            Console.WriteLine();
+            Console.WriteLine("======================================");
+            Console.WriteLine("        MOST ORDERED ITEMS REPORT");
+            Console.WriteLine("======================================");
+
+            try
+            {
+                List<Order> orders = orderService.GetAllOrders()
+                    .Where(o => o.Status != OrderStatus.Cancelled)
+                    .ToList();
+
+                if (orders.Count == 0)
+                {
+                    Console.WriteLine("No orders found.");
+                    Pause();
+                    return;
+                }
+
+                List<OrderItem> allOrderItems = new List<OrderItem>();
+
+                foreach (Order order in orders)
+                {
+                    List<OrderItem> orderItems = orderService.GetOrderItems(order.Id);
+                    allOrderItems.AddRange(orderItems);
+                }
+
+                if (allOrderItems.Count == 0)
+                {
+                    Console.WriteLine("No ordered items found.");
+                    Pause();
+                    return;
+                }
+
+                var report = allOrderItems
+                    .GroupBy(oi => new
+                    {
+                        oi.MenuItemId,
+                        Name = oi.MenuItem != null ? oi.MenuItem.Name : "Unknown item"
+                    })
+                    .Select(group => new
+                    {
+                        MenuItemId = group.Key.MenuItemId,
+                        Name = group.Key.Name,
+                        Quantity = group.Sum(oi => oi.Quantity),
+                        Revenue = group.Sum(oi => oi.Quantity * oi.UnitPrice)
+                    })
+                    .OrderByDescending(x => x.Quantity)
+                    .ToList();
+
+                Console.WriteLine();
+                Console.WriteLine("{0,-8} {1,-25} {2,-10} {3,-12}",
+                    "Item ID", "Name", "Quantity", "Revenue");
+
+                Console.WriteLine(new string('-', 60));
+
+                foreach (var item in report)
+                {
+                    Console.WriteLine("{0,-8} {1,-25} {2,-10} {3,-12:F2}",
+                        item.MenuItemId,
+                        item.Name,
+                        item.Quantity,
+                        item.Revenue);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Error: " + ex.Message);
+            }
+
+            Pause();
         }
 
         private void TableOccupancyReportUI()
